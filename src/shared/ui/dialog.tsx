@@ -20,6 +20,9 @@ type DialogContentProps = {
   closeLabel?: string
   onEscapeKeyDown?: DialogContentPrimitiveProps['onEscapeKeyDown']
   onInteractOutside?: DialogContentPrimitiveProps['onInteractOutside']
+  onCloseAutoFocus?: DialogContentPrimitiveProps['onCloseAutoFocus']
+  onOpenAutoFocus?: DialogContentPrimitiveProps['onOpenAutoFocus']
+  isCloseDisabled?: boolean
   hideCloseButton?: boolean
 }
 
@@ -30,6 +33,9 @@ export function DialogContent({
   closeLabel = 'Закрыть',
   onEscapeKeyDown,
   onInteractOutside,
+  onCloseAutoFocus,
+  onOpenAutoFocus,
+  isCloseDisabled = false,
   hideCloseButton = false,
 }: DialogContentProps) {
   const contentCn = cn(
@@ -38,6 +44,8 @@ export function DialogContent({
     className,
   )
 
+  const showCloseButton = !hideCloseButton
+
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-overlay" />
@@ -45,15 +53,19 @@ export function DialogContent({
         className={contentCn}
         onEscapeKeyDown={onEscapeKeyDown}
         onInteractOutside={onInteractOutside}
+        onCloseAutoFocus={onCloseAutoFocus}
+        onOpenAutoFocus={onOpenAutoFocus}
+        aria-describedby={undefined}
       >
         <div className="flex h-14 shrink-0 items-center gap-2 md:mb-4 md:h-auto">
           <DialogPrimitive.Title className="min-w-0 flex-1 typo-title text-primary">
             {title}
           </DialogPrimitive.Title>
-          <Gate when={!hideCloseButton}>
+          <Gate when={showCloseButton}>
             <DialogPrimitive.Close asChild>
               <IconButton
                 label={closeLabel}
+                disabled={isCloseDisabled}
                 className="order-first -ml-2 md:order-last md:-mt-2 md:-mr-2 md:ml-0"
               >
                 <X aria-hidden />

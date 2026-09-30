@@ -31,6 +31,9 @@ class ResizeObserverStub {
 }
 Object.defineProperty(window, 'ResizeObserver', { writable: true, value: ResizeObserverStub })
 
+// jsdom не умеет прокрутку: заглушка, которую тесты могут подсмотреть через spy.
+Element.prototype.scrollTo = noop
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' })
 })

@@ -286,3 +286,8 @@
   --avatar-green: linear-gradient(135deg, #14e1d5, #03c722);
   --avatar-orange: linear-gradient(135deg, #ffc93d, #ff832a);
 }
+
+/* ---- Sprint 2: layout (DESIGN §3 — зона сообщений центрируется, max-width 791) ---- */
+:root {
+  --chat-content-max-w: 791px;
+}

@@ -1,8 +1,9 @@
 import { StrictMode } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { expect } from 'vitest'
 
 import { QueryProvider } from '@/app/providers/query-provider'
 import { routes } from '@/app/router/routes'
@@ -35,4 +36,33 @@ export function renderApp({ path = '/', advanceTimers }: RenderAppOptions = {}) 
     </StrictMode>,
   )
   return { ...view, user, router }
+}
+
+const STORAGE_KEY = 'max-chat:session'
+
+/** Приложение с уже сохранённой сессией: ждём главный экран. */
+export async function renderSignedInApp({
+  idInstance = '3100000001',
+  ...options
+}: RenderAppOptions & { idInstance?: string } = {}) {
+  sessionStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      idInstance,
+      apiTokenInstance: 'token',
+      apiUrl: 'https://3100.api.green-api.com',
+    }),
+  )
+  const view = renderApp(options)
+  await screen.findByRole('heading', { name: 'Чаты' })
+  return view
+}
+
+/** Создать чат через форму «Новый чат» и дождаться его открытия. */
+export async function createChatViaForm(user: ReturnType<typeof userEvent.setup>, phone: string) {
+  await user.click(screen.getByRole('button', { name: 'Новый чат' }))
+  await user.type(await screen.findByLabelText('Номер телефона'), `${phone}{Enter}`)
+  await waitFor(() => {
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
 }
