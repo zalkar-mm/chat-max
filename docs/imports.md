@@ -8,7 +8,9 @@
 2. Импорт идёт **сверху вниз по слоям** ([architecture §2](architecture.md#2-слои)).
 3. Между слайсами одного слоя — запрещён.
 4. **Между слоями и слайсами — алиас `@/`, внутри своего слайса — относительный путь.**
-5. Алиас на собственный слайс запрещён: `entities/message/*` не импортирует себя через `@/entities/message/...`.
+5. Алиас на собственный слой запрещён: `entities/message/*` не импортирует себя через `@/entities/message/...`,
+   `features/*` не импортирует `@/features/...` вообще (свой слайс — относительно, чужой — нельзя).
+6. Исключение — `shared`: слайсов в нём нет, алиас внутри разрешён (shadcn CLI генерирует `@/shared/lib/cn`).
 
 Алиас один — `@/*` → `src/*` (`tsconfig.app.json` + `vite.config.ts`). Никаких `~app`, `~features`.
 
@@ -21,7 +23,7 @@
 | `widgets`  | `features`, `entities`, `shared`            |
 | `features` | `entities`, `shared`                        |
 | `entities` | `shared` + себя (относительно)              |
-| `shared`   | только `shared` (относительно)              |
+| `shared`   | только `shared`                             |
 
 ## 3. Импорт конкретного файла
 
@@ -47,11 +49,13 @@ import { messageSchema } from '@/entities/message/model/message.schema' // ❌ �
 ```
 
 Нужен repository снаружи — значит, в вызывающем коде делается то, что должно быть в хуке слайса.
-Оборачивай в хук. Барьер держит ESLint `no-restricted-imports` / boundaries [инфра].
+Оборачивай в хук. Барьер держит ESLint `no-restricted-imports`.
+
+Выше `entities` запрещены также `@/shared/api/*` и `axios` — транспорт только через хуки сущностей.
 
 ## 5. Порядок групп
 
-Правит `simple-import-sort` автоматически [инфра]; группы через пустую строку:
+Правит `simple-import-sort` автоматически (`npm run lint:fix`); группы через пустую строку:
 
 ```ts
 import { useState } from 'react' // 1. react
@@ -78,7 +82,9 @@ import { type SendMessageInput, useSendMessage } from '../api/use-send-message' 
 
 ## Что запрещено
 
-- ❌ `index.ts`-barrel в `src/` — ESLint [инфра].
-- ❌ Импорт вверх, кросс-импорт слайсов, приватных файлов чужого слайса — ESLint [инфра].
-- ❌ Алиас на собственный слайс, второй алиас кроме `@/` — ревью.
-- ❌ Неотсортированные импорты — ESLint `simple-import-sort` [инфра].
+- ❌ Импорт `…/index` (barrel) — ESLint (`no-restricted-syntax`).
+- ❌ Импорт вверх по слоям — ESLint (`import-x/no-restricted-paths`); циклы — `import-x/no-cycle`.
+- ❌ Алиас на свой слой (кросс-импорт слайсов), приватные файлы сущности, транспорт выше `entities` — ESLint (`no-restricted-imports`).
+- ❌ Выход относительным путём за пределы своего слайса (`../../other-slice`) — ревью.
+- ❌ Второй алиас кроме `@/` — ревью.
+- ❌ Неотсортированные импорты, дубли — ESLint (`simple-import-sort`, `import-x/no-duplicates`).

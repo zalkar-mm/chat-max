@@ -7,21 +7,22 @@
 
 ## 1. Стек
 
-| Что                  | Чем                                                                             | Статус      |
-| -------------------- | ------------------------------------------------------------------------------- | ----------- |
-| Сборка               | Vite 8, React 19, TypeScript 6 (strict)                                         | установлено |
-| Тесты                | Vitest, Testing Library, jsdom                                                  | установлено |
-| Форматирование       | Prettier                                                                        | установлено |
-| Линтер               | ESLint 9 flat config (сейчас oxlint из шаблона)                                 | [инфра]     |
-| Стили                | Tailwind CSS v4 (конфиг в `index.css`), `cn` = `clsx` + `tailwind-merge`, `cva` | [инфра]     |
-| UI-примитивы         | shadcn/ui (стиль radix) в `shared/ui/`, иконки `lucide-react`                   | [инфра]     |
-| Серверные запросы    | axios + TanStack Query (мутации и разовые запросы)                              | [инфра]     |
-| Клиентское состояние | Zustand (сессия, чаты, сообщения)                                               | [инфра]     |
-| Роутинг              | React Router v7                                                                 | [инфра]     |
-| Формы                | react-hook-form + zod + shadcn `<Form>`                                         | [инфра]     |
-| Уведомления          | sonner через `shared/lib/notify`                                                | [инфра]     |
+| Что                  | Чем                                                                                                                                                           | Статус      |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Сборка               | Vite 8, React 19, TypeScript 6 (strict)                                                                                                                       | установлено |
+| Тесты                | Vitest, Testing Library, jsdom                                                                                                                                | установлено |
+| Форматирование       | Prettier                                                                                                                                                      | установлено |
+| Линтер               | ESLint 9 flat config (`eslint.config.js`): typescript-eslint type-checked, react, react-hooks, jsx-a11y, import-x, simple-import-sort, tanstack-query, vitest | установлено |
+| Стили                | Tailwind CSS v4 (конфиг в `index.css`), `cn` = `clsx` + `tailwind-merge`, `cva`                                                                               | [инфра]     |
+| UI-примитивы         | shadcn/ui (стиль radix) в `shared/ui/`, иконки `lucide-react`                                                                                                 | [инфра]     |
+| Серверные запросы    | axios + TanStack Query (мутации и разовые запросы)                                                                                                            | [инфра]     |
+| Клиентское состояние | Zustand (сессия, чаты, сообщения)                                                                                                                             | [инфра]     |
+| Роутинг              | React Router v7                                                                                                                                               | [инфра]     |
+| Формы                | react-hook-form + zod + shadcn `<Form>`                                                                                                                       | [инфра]     |
+| Уведомления          | sonner через `shared/lib/notify`                                                                                                                              | [инфра]     |
 
 `[инфра]` — зафиксировано правилами, но ещё не установлено. Ставится отдельным этапом.
+ESLint 10 не используем: плагины react и jsx-a11y его пока не поддерживают.
 Окончательный набор может поправить дизайн-спека: сначала правка этого файла, потом код.
 
 ## 2. Как устроены правила

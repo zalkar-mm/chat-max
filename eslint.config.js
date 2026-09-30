@@ -24,7 +24,8 @@ const BASE_RESTRICTED_SYNTAX = [
   },
   {
     selector: 'JSXExpressionContainer > ConditionalExpression',
-    message: 'Тернарка в JSX запрещена. Используй ранние return, `<Gate when={...}>` или state-map.',
+    message:
+      'Тернарка в JSX запрещена. Используй ранние return, `<Gate when={...}>` или state-map.',
   },
   {
     selector: "JSXExpressionContainer > LogicalExpression[operator='&&']",
@@ -73,7 +74,7 @@ const NATIVE_CONTROL_RESTRICTIONS = [
     message: 'Нативная `<table>` запрещена. Возьми `Table` из `@/shared/ui/table`.',
   },
   {
-    selector: "JSXOpeningElement[name.name=/^(details|summary)$/]",
+    selector: 'JSXOpeningElement[name.name=/^(details|summary)$/]',
     message: '`<details>/<summary>` запрещены. Возьми `Collapsible` из `@/shared/ui/collapsible`.',
   },
 ]
@@ -123,7 +124,7 @@ const ENTITY_PRIVATE_PATTERNS = [
   },
 ]
 
-/** Транспорт доступен только из `entities/*/api` и `shared/api`. */
+// Транспорт доступен только из entities/<slice>/api и shared/api.
 const TRANSPORT_PATTERNS = [
   {
     group: ['@/shared/api/*'],
@@ -266,7 +267,10 @@ export default tseslint.config(
       '@typescript-eslint/no-non-null-assertion': 'error',
       // `as` запрещён, `as const` разрешён правилом всегда
       '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
-      '@typescript-eslint/ban-ts-comment': ['error', { 'ts-expect-error': 'allow-with-description' }],
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        { 'ts-expect-error': 'allow-with-description' },
+      ],
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
       '@typescript-eslint/consistent-type-imports': [
         'error',

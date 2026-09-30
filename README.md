@@ -9,7 +9,7 @@
 
 ## Стек
 
-React 19, TypeScript (strict), Vite, Vitest + Testing Library, oxlint, Prettier.
+React 19, TypeScript (strict), Vite, Vitest + Testing Library, ESLint 9, Prettier.
 
 ## Запуск
 
@@ -28,7 +28,7 @@ npm run dev
 | `npm run build`     | проверка типов и production-сборка      |
 | `npm run preview`   | локальный просмотр сборки               |
 | `npm run typecheck` | `tsc -b`                                |
-| `npm run lint`      | oxlint                                  |
+| `npm run lint`      | ESLint (0 warnings)                     |
 | `npm run format`    | Prettier                                |
 | `npm test`          | тесты (Vitest)                          |
 | `npm run check`     | typecheck + lint + format:check + тесты |

@@ -38,7 +38,8 @@ export function cn(...inputs: ClassValue[]) {
 - Сгенерированный код не переписываем; точечная правка — комментарий сверху `// customized: …`.
 - Берём по мере надобности: `button`, `input`, `textarea`, `label`, `form`, `scroll-area`, `avatar`,
   `dialog`, `tooltip`, `sonner`. Не ставим компоненты «на будущее».
-- Нативный контрол там, где есть примитив (`<button>`, `<input>`), не используем — берём из `shared/ui`.
+- Нативные `<button>`, `<input>`, `<textarea>`, `<select>`, `<table>`, `<details>` вне `shared/ui` запрещены —
+  берём примитив из `shared/ui`. Внутри самих примитивов нативные теги, наоборот, обязательны.
 
 ## 4. Иконки
 
@@ -97,7 +98,9 @@ export function cn(...inputs: ClassValue[]) {
 
 - ❌ `tailwind.config.*`, классы под компонент в `index.css`, цвета/размеры мимо темы — ревью.
 - ❌ Ручной копипаст shadcn, свои обёртки над RHF, UI-библиотеки кроме shadcn (MUI, Ant) — ревью.
-- ❌ `import { toast } from 'sonner'` вне `shared/lib/notify`, `window.alert/confirm/prompt` — ESLint [инфра].
+- ❌ `import { toast } from 'sonner'` вне `shared`, `alert/confirm/prompt` — ESLint.
+- ❌ Нативные контролы вне `shared/ui` — ESLint (`no-restricted-syntax`).
+- ❌ Нарушения базовой доступности (`jsx-a11y/recommended`) — ESLint.
 - ❌ Свой `Icon`-маппер, иконки не из `lucide-react` — ревью.
 - ❌ Кликабельный `div`, контрол без доступного имени — тесты по ролям, ревью.
 - ❌ Английский текст в интерфейсе — ревью.
