@@ -277,3 +277,12 @@
   --scroll-fab-bg: #25262d;
   --scroll-fab-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
+
+/* ---- Sprint 2: avatar gradients (DESIGN §4.3), одинаковые в обеих темах ---- */
+:root {
+  --avatar-sky: linear-gradient(135deg, #08d7f3, #5398ff);
+  --avatar-violet: linear-gradient(135deg, #bf97ff, #526eff);
+  --avatar-coral: linear-gradient(135deg, #ff48b6, #ff8a35);
+  --avatar-green: linear-gradient(135deg, #14e1d5, #03c722);
+  --avatar-orange: linear-gradient(135deg, #ffc93d, #ff832a);
+}

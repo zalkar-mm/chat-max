@@ -49,3 +49,46 @@ export function getStateScenario(idInstance: string): StateScenario {
 export function resetScenarios() {
   cache.clear()
 }
+
+type HttpScenario<T> = ({ kind: 'ok' } & T) | { kind: 'status'; status: number }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+// Окончание номера выбирает ответ checkAccount. Таблица — в src/mocks/README.md.
+const CHECK_ACCOUNT_STATUS: Readonly<Record<string, number>> = {
+  '4000': 400,
+  '4030': 403,
+  '4660': 466,
+  '4690': 469,
+  '5000': 500,
+}
+
+export function getCheckAccountScenario(
+  body: unknown,
+): HttpScenario<{ exist: boolean; chatId: string }> {
+  const phone = isRecord(body) ? String(body.phoneNumber) : ''
+  const status = CHECK_ACCOUNT_STATUS[phone.slice(-4)]
+  if (status !== undefined) return { kind: 'status', status }
+  if (phone.endsWith('0000')) return { kind: 'ok', exist: false, chatId: '' }
+  return { kind: 'ok', exist: true, chatId: `1${phone.slice(-8)}` }
+}
+
+// Метка в тексте сообщения выбирает ответ sendMessage: «привет #466».
+const SEND_MESSAGE_STATUS: Readonly<Record<string, number>> = {
+  '#400': 400,
+  '#403': 403,
+  '#466': 466,
+  '#500': 500,
+}
+
+let messageCounter = 0
+
+export function getSendMessageScenario(body: unknown): HttpScenario<{ idMessage: string }> {
+  const text = isRecord(body) ? String(body.message) : ''
+  const tag = Object.keys(SEND_MESSAGE_STATUS).find((key) => text.includes(key))
+  const status = tag === undefined ? undefined : SEND_MESSAGE_STATUS[tag]
+  if (status !== undefined) return { kind: 'status', status }
+  messageCounter += 1
+  return { kind: 'ok', idMessage: `mock-${Date.now()}-${messageCounter}` }
+}
