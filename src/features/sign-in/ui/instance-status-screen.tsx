@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 
-import { Ban, Clock, Lock, QrCode } from 'lucide-react'
+import { Ban, Clock, ExternalLink, Lock, QrCode } from 'lucide-react'
 
 import type { BlockingInstanceState } from '@/entities/session/model/instance-state'
 
 import { GREEN_API_CONSOLE_URL } from '@/shared/config/env'
 import { cn } from '@/shared/lib/cn'
 import { Button, buttonVariants } from '@/shared/ui/button'
+import { InlineAlert } from '@/shared/ui/inline-alert'
 import { Logo } from '@/shared/ui/logo'
 import { Spinner } from '@/shared/ui/spinner'
 import { StatusScreen } from '@/shared/ui/status-screen'
@@ -82,12 +83,13 @@ type InstanceStatusScreenProps = {
   view: StatusView
   attempt: number
   isRechecking: boolean
+  errorText: string | null
   onRecheck: () => void
   onEdit: () => void
   onCancel: () => void
 }
 
-type StatusActionButtonProps = Omit<InstanceStatusScreenProps, 'view' | 'attempt'> & {
+type StatusActionButtonProps = Omit<InstanceStatusScreenProps, 'view' | 'attempt' | 'errorText'> & {
   action: StatusAction
   variant: ActionVariant
 }
@@ -101,10 +103,21 @@ function StatusActionButton({
   onCancel,
 }: StatusActionButtonProps) {
   if (action === 'console') {
-    const linkCn = cn(buttonVariants({ variant }), 'w-full')
+    const linkCn = cn(
+      buttonVariants({ variant }),
+      'w-full',
+      isRechecking && 'pointer-events-none opacity-60',
+    )
     return (
-      <a className={linkCn} href={GREEN_API_CONSOLE_URL} target="_blank" rel="noopener noreferrer">
+      <a
+        className={linkCn}
+        href={GREEN_API_CONSOLE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-disabled={isRechecking}
+      >
         Открыть личный кабинет
+        <ExternalLink className="size-4" aria-hidden />
       </a>
     )
   }
@@ -126,7 +139,21 @@ function StatusActionButton({
   )
 }
 
-export function InstanceStatusScreen({ view, attempt, ...actionProps }: InstanceStatusScreenProps) {
+function StatusError({ text }: { text: string | null }) {
+  if (text === null) return null
+  return (
+    <div className="mb-2 text-left">
+      <InlineAlert tone="error">{text}</InlineAlert>
+    </div>
+  )
+}
+
+export function InstanceStatusScreen({
+  view,
+  attempt,
+  errorText,
+  ...actionProps
+}: InstanceStatusScreenProps) {
   const config = STATUS_CONFIG[view]
   const footnote =
     view === 'starting' && attempt > 0
@@ -142,7 +169,9 @@ export function InstanceStatusScreen({ view, attempt, ...actionProps }: Instance
         title={config.title}
         description={config.description}
         footnote={footnote}
+        focusTitle
       >
+        <StatusError text={errorText} />
         {config.actions.map(([action, variant]) => (
           <StatusActionButton key={action} action={action} variant={variant} {...actionProps} />
         ))}

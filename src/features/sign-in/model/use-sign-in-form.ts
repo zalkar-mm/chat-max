@@ -19,6 +19,7 @@ export function useSignInForm() {
   const step = useSignInFlowStore((state) => state.step)
   const draft = useSignInFlowStore((state) => state.draft)
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY)
+  const [shouldFocusOnOpen] = useState(isDesktop)
   const [isAdvancedToggled, setAdvancedToggled] = useState(false)
 
   const form = useForm<SignInInput, unknown, SignInValues>({
@@ -30,8 +31,8 @@ export function useSignInForm() {
 
   // Фокус в первое поле — только на desktop: на мобильном не выбрасываем клавиатуру.
   useEffect(() => {
-    if (isDesktop) form.setFocus('idInstance')
-  }, [form, isDesktop])
+    if (shouldFocusOnOpen) form.setFocus('idInstance')
+  }, [form, shouldFocusOnOpen])
 
   const [idInstance, apiTokenInstance, remember] = useWatch({
     control: form.control,
@@ -57,6 +58,7 @@ export function useSignInForm() {
 
   const handleRememberChange = (checked: boolean) => {
     form.setValue('remember', checked)
+    clearSignInError()
   }
 
   return {

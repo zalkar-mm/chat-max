@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 
 import { render } from '@testing-library/react'
@@ -27,9 +28,11 @@ export function renderApp({ path = '/', advanceTimers }: RenderAppOptions = {}) 
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   const user = userEvent.setup(advanceTimers ? { advanceTimers } : {})
   const view = render(
-    <QueryProvider>
-      <RouterProvider router={router} />
-    </QueryProvider>,
+    <StrictMode>
+      <QueryProvider>
+        <RouterProvider router={router} />
+      </QueryProvider>
+    </StrictMode>,
   )
   return { ...view, user, router }
 }

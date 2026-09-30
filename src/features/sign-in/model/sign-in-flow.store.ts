@@ -15,7 +15,12 @@ export type PendingSignIn = {
 
 export type SignInStep =
   | { kind: 'restoring'; pending: PendingSignIn }
-  | { kind: 'restoreFailed'; pending: PendingSignIn; isRetrying: boolean }
+  | {
+      kind: 'restoreFailed'
+      pending: PendingSignIn
+      isRetrying: boolean
+      error: SignInErrorKind
+    }
   | {
       kind: 'form'
       isChecking: boolean
@@ -29,6 +34,8 @@ export type SignInStep =
       isRechecking: boolean
       attempt: number
       isStartingTimedOut: boolean
+      /** Ошибка «Проверить снова»: показываем на самом экране статуса, контекст не теряется. */
+      error: SignInErrorKind | null
     }
 
 type SignInFlowState = {
@@ -51,13 +58,15 @@ const toDraft = ({ credentials, remember }: PendingSignIn): SignInValues => ({
   remember,
 })
 
-function createInitialState(): SignInFlowState {
+const INITIAL_STATE: SignInFlowState = { step: FORM_STEP, draft: null }
+
+function readInitialState(): SignInFlowState {
   const stored = readStoredSession()
-  if (!stored) return { step: FORM_STEP, draft: null }
+  if (!stored) return INITIAL_STATE
   return { step: { kind: 'restoring', pending: stored }, draft: toDraft(stored) }
 }
 
-export const useSignInFlowStore = create<SignInFlowState>()(createInitialState)
+export const useSignInFlowStore = create<SignInFlowState>()(() => INITIAL_STATE)
 
 export const setSignInStep = (step: SignInStep) => {
   useSignInFlowStore.setState({ step })
@@ -69,11 +78,11 @@ export const setSignInDraft = (draft: SignInValues | null) => {
 
 export const getSignInStep = () => useSignInFlowStore.getState().step
 
-/** Заново решить по хранилищу, восстанавливать ли сессию (старт приложения, тесты). */
+/** Старт приложения: по хранилищу решить, восстанавливать ли сессию. Вызывается явно до рендера. */
 export const initSignInFlow = () => {
-  useSignInFlowStore.setState(createInitialState())
+  useSignInFlowStore.setState(readInitialState())
 }
 
 export const resetSignInFlow = () => {
-  useSignInFlowStore.setState({ step: FORM_STEP, draft: null })
+  useSignInFlowStore.setState(INITIAL_STATE)
 }

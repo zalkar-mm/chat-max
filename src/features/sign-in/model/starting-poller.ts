@@ -10,6 +10,9 @@ type StartingPollerOptions = {
   onAttempt: (attempt: number) => void
   onResolved: (state: InstanceState) => void
   onGiveUp: () => void
+  /** Ошибка, после которой ждать бессмысленно (например, неверные креды): опрос останавливается. */
+  isFatalError?: (error: unknown) => boolean
+  onFatalError?: (error: unknown) => void
   intervalMs?: number
   maxAttempts?: number
 }
@@ -28,6 +31,8 @@ export function createStartingPoller({
   onAttempt,
   onResolved,
   onGiveUp,
+  isFatalError = () => false,
+  onFatalError = () => undefined,
   intervalMs = STARTING_RECHECK_INTERVAL_MS,
   maxAttempts = STARTING_MAX_ATTEMPTS,
 }: StartingPollerOptions): StartingPoller {
@@ -49,6 +54,11 @@ export function createStartingPoller({
       return await check(signal)
     } catch (error) {
       if (isAbortError(error)) return null
+      if (isFatalError(error)) {
+        stop()
+        onFatalError(error)
+        return null
+      }
       return InstanceState.Starting
     }
   }
