@@ -2,6 +2,7 @@ import { cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 
 import '@testing-library/jest-dom/vitest'
+import './zustand-mock'
 
 import { server } from '@/mocks/node'
 import { resetScenarios } from '@/mocks/scenarios'
