@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useShallow } from 'zustand/react/shallow'
 
 import type {
   Message,
@@ -84,3 +85,13 @@ export const useLastMessage = (chatId: string): Message | null =>
     if (lastId === undefined) return null
     return state.byId[lastId] ?? null
   })
+
+/** Сообщения чата по порядку добавления; ссылка стабильна, пока не изменилось ни одно сообщение чата. */
+export const useChatMessages = (chatId: string): readonly Message[] =>
+  useMessageStore(
+    useShallow((state) =>
+      (state.idsByChat[chatId] ?? EMPTY_IDS)
+        .map((id) => state.byId[id])
+        .filter((message) => message !== undefined),
+    ),
+  )
