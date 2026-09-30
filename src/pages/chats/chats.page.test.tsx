@@ -45,14 +45,11 @@ describe('Задача 5 — каркас главного экрана', () => 
     expect(screen.getByText('3100000001')).toBeInTheDocument()
   })
 
-  it('«Новый чат» и «Начать новый чат» открывают заглушку', async () => {
+  it('«Новый чат» и «Начать новый чат» открывают форму нового чата', async () => {
     const { user } = await openMainScreen()
     await user.click(screen.getByRole('button', { name: 'Новый чат' }))
     const dialog = await screen.findByRole('dialog', { name: 'Новый чат' })
-    expect(within(dialog).getByText('Появится в следующей версии')).toBeInTheDocument()
-    const [, closeButton] = within(dialog).getAllByRole('button', { name: 'Закрыть' })
-    if (!closeButton) throw new Error('Нет кнопки «Закрыть» в заглушке')
-    await user.click(closeButton)
+    await user.click(within(dialog).getByRole('button', { name: 'Отмена' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Начать новый чат' }))

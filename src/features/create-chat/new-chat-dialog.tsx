@@ -1,22 +1,54 @@
-import { Button } from '@/shared/ui/button'
-import { Dialog, DialogClose, DialogContent, DialogDescription } from '@/shared/ui/dialog'
+import { Dialog, DialogContent } from '@/shared/ui/dialog'
+import { Gate } from '@/shared/ui/gate'
 
-import { setNewChatDialogOpen, useNewChatDialogStore } from './model/new-chat-dialog.store'
+import {
+  closeNewChatDialog,
+  takeReturnFocusTarget,
+  useNewChatDialogStore,
+} from './model/new-chat-dialog.store'
+import { useCreateChatForm } from './model/use-create-chat-form'
+import { CreateChatForm } from './ui/create-chat-form'
 
-/** Заглушка до спринта 2: место под форму «Новый чат» уже заложено. */
+const handleOpenChange = (isOpen: boolean) => {
+  if (!isOpen) closeNewChatDialog()
+}
+
+const handleCloseAutoFocus = (event: Event) => {
+  const target = takeReturnFocusTarget()
+  if (!target) return
+  event.preventDefault()
+  target.focus()
+}
+
+function NewChatDialogBody() {
+  const model = useCreateChatForm()
+  const preventWhileChecking = (event: Event) => {
+    if (model.isChecking) event.preventDefault()
+  }
+
+  return (
+    <DialogContent
+      title="Новый чат"
+      isCloseDisabled={model.isChecking}
+      onEscapeKeyDown={preventWhileChecking}
+      onInteractOutside={preventWhileChecking}
+      onCloseAutoFocus={handleCloseAutoFocus}
+      onOpenAutoFocus={model.onOpenAutoFocus}
+    >
+      <CreateChatForm model={model} onCancel={closeNewChatDialog} />
+    </DialogContent>
+  )
+}
+
+/** Форма «Новый чат»: на desktop — модалка, на mobile — полноэкранная панель. */
 export function NewChatDialog() {
   const isOpen = useNewChatDialogStore((state) => state.isOpen)
 
   return (
-    <Dialog open={isOpen} onOpenChange={setNewChatDialogOpen}>
-      <DialogContent title="Новый чат">
-        <DialogDescription>Появится в следующей версии</DialogDescription>
-        <DialogClose asChild>
-          <Button variant="secondary" className="mt-6 w-full">
-            Закрыть
-          </Button>
-        </DialogClose>
-      </DialogContent>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <Gate when={isOpen}>
+        <NewChatDialogBody />
+      </Gate>
     </Dialog>
   )
 }
