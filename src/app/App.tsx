@@ -1,7 +1,15 @@
+import { useState } from 'react'
+import { createBrowserRouter, RouterProvider } from 'react-router'
+
+import { QueryProvider } from './providers/query-provider'
+import { routes } from './router/routes'
+
 export function App() {
+  const [router] = useState(() => createBrowserRouter(routes))
+
   return (
-    <main className="app">
-      <h1>MAX Chat</h1>
-    </main>
+    <QueryProvider>
+      <RouterProvider router={router} />
+    </QueryProvider>
   )
 }

@@ -24,7 +24,8 @@ const BASE_RESTRICTED_SYNTAX = [
   },
   {
     selector: 'JSXExpressionContainer > ConditionalExpression',
-    message: 'Тернарка в JSX запрещена. Используй ранние return, `<Gate when={...}>` или state-map.',
+    message:
+      'Тернарка в JSX запрещена. Используй ранние return, `<Gate when={...}>` или state-map.',
   },
   {
     selector: "JSXExpressionContainer > LogicalExpression[operator='&&']",
@@ -48,7 +49,7 @@ const BASE_RESTRICTED_SYNTAX = [
 ]
 
 /**
- * Нативные контролы, у которых есть shadcn-примитив. Применяются ко всем слоям
+ * Нативные контролы, у которых есть примитив в `shared/ui`. Применяются ко всем слоям
  * выше `shared/` - внутри самих примитивов нативные теги, наоборот, обязательны.
  */
 const NATIVE_CONTROL_RESTRICTIONS = [
@@ -73,7 +74,7 @@ const NATIVE_CONTROL_RESTRICTIONS = [
     message: 'Нативная `<table>` запрещена. Возьми `Table` из `@/shared/ui/table`.',
   },
   {
-    selector: "JSXOpeningElement[name.name=/^(details|summary)$/]",
+    selector: 'JSXOpeningElement[name.name=/^(details|summary)$/]',
     message: '`<details>/<summary>` запрещены. Возьми `Collapsible` из `@/shared/ui/collapsible`.',
   },
 ]
@@ -123,11 +124,16 @@ const ENTITY_PRIVATE_PATTERNS = [
   },
 ]
 
-/** Транспорт доступен только из `entities/*/api` и `shared/api`. */
+// Транспорт доступен только из entities/<slice>/api и shared/api.
 const TRANSPORT_PATTERNS = [
   {
-    group: ['@/shared/api/*'],
-    message: 'HTTP-клиент — только в `entities/*/api`. Выше слоя entities — через хуки сущностей.',
+    group: [
+      '@/shared/api/green-api-client',
+      '@/shared/api/build-method-url',
+      '@/shared/api/parse-response',
+    ],
+    message:
+      'HTTP-транспорт — только в `entities/*/api`. Выше слоя entities — через api сущностей.',
   },
 ]
 
@@ -266,7 +272,10 @@ export default tseslint.config(
       '@typescript-eslint/no-non-null-assertion': 'error',
       // `as` запрещён, `as const` разрешён правилом всегда
       '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
-      '@typescript-eslint/ban-ts-comment': ['error', { 'ts-expect-error': 'allow-with-description' }],
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        { 'ts-expect-error': 'allow-with-description' },
+      ],
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
       '@typescript-eslint/consistent-type-imports': [
         'error',
@@ -296,7 +305,7 @@ export default tseslint.config(
         'error',
         {
           name: 'confirm',
-          message: '`confirm` запрещён. Нужен диалог — shadcn `AlertDialog` из `@/shared/ui`.',
+          message: '`confirm` запрещён. Нужен диалог — `Dialog` из `@/shared/ui/dialog`.',
         },
         {
           name: 'alert',
@@ -304,7 +313,7 @@ export default tseslint.config(
         },
         {
           name: 'prompt',
-          message: '`prompt` запрещён. Нужен ввод — форма на shadcn `Dialog`.',
+          message: '`prompt` запрещён. Нужен ввод — форма в `Dialog`.',
         },
       ],
     },

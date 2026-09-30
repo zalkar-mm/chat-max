@@ -22,7 +22,7 @@
 | Локальный обработчик   | `handle[Action]`                            | `handleSend`                             |
 
 - Экспорт по умолчанию не используем. Исключение — то, что требует инструмент (`vite.config.ts`).
-- `index.tsx` как имя компонента не используем. shadcn-файлы — как сгенерил CLI (`button.tsx`).
+- `index.tsx` как имя компонента не используем.
 
 ## 2. SOLID на практике
 
@@ -72,20 +72,25 @@
 
 В разметке — только чтение переменных и полей. Всё остальное считается в теле компонента.
 
-- ❌ **Тернарки в JSX.** Варианты: ранний `return`, `Record`-карта состояний, `<Gate when>` из `shared/ui`.
+- ❌ **Тернарки и `&&` в JSX** — ни одного условного выражения в разметке (`&&` роняет `0` и `""`).
+  Варианты: ранний `return`, `Record`-карта состояний, `<Gate when>` из `shared/ui/gate`.
   ```tsx
   if (isLoading) return <Spinner />
   if (!messages.length) return <EmptyChat />
   return <MessageList messages={messages} />
   ```
-- `&&` — **только** для одиночного узла без альтернативы и **только с булевым** условием:
-  `{isOutgoing && <CheckIcon />}`. Не `{messages.length && …}` — выведет `0`.
+  ```tsx
+  <Gate when={isOutgoing}>
+    <CheckIcon />
+  </Gate>
+  ```
 - ❌ **Вычисления в атрибутах.** Шаблонные строки, вызовы, сравнения, `cn(...)` — в константу:
   ```tsx
   const bubbleCn = cn('rounded-lg px-3 py-2', isOutgoing && 'bg-primary text-primary-foreground')
   return <div className={bubbleCn}>{text}</div>
   ```
-- ❌ **Инлайн-стрелки в обработчиках** (`onClick={() => onOpen(id)}`) — объявляем `handleX` в теле.
+- ❌ **Инлайн-функции и вызовы в обработчиках `onX`** (`onClick={() => onOpen(id)}`, `onClick={make(id)}`) —
+  объявляем `handleX` в теле.
   Обработчик без своей логики не оборачиваем: `onClick={onClick}`.
   Обработчик с аргументом внутри `.map` — повод вынести подкомпонент.
 
@@ -109,10 +114,11 @@
 
 ## Что запрещено
 
-- ❌ `any`, `as` (кроме `as const`), `!`, `@ts-ignore`, `enum` — ESLint [инфра] / ревью.
-- ❌ Тернарка в JSX, `&&` с не-булевым условием, инлайн-стрелка в обработчике — ESLint [инфра] / ревью.
-- ❌ Хук после раннего `return` — `react-hooks/rules-of-hooks`.
-- ❌ Загрузка в `useEffect`, эффект без очистки, `useEffect(() => setState(...))` — ревью.
-- ❌ `console.log`, default export, `key={index}` — ESLint [инфра] / ревью.
+- ❌ `any`, `as` (кроме `as const`), `!`, `@ts-ignore`, `enum` — ESLint.
+- ❌ Тернарка и `&&` в JSX, вложенные тернарки, инлайн-функция/вызов в `onX` — ESLint (`no-restricted-syntax`, `no-nested-ternary`).
+- ❌ Неисчерпывающий `switch` по union — ESLint (`switch-exhaustiveness-check`).
+- ❌ Хук после раннего `return`, `setState` в эффекте — ESLint (`react-hooks`).
+- ❌ Загрузка в `useEffect`, эффект без очистки — ревью.
+- ❌ `console.log`, default export, `key={index}`, `alert/confirm/prompt` — ESLint.
 - ❌ Профилактическая мемоизация, справочник `switch`-цепочкой — ревью.
 - Soft (флаг ревью): файл > 300 строк, > 3 `useEffect` в компоненте, > 8 пропсов, дублирование логики.
