@@ -300,7 +300,7 @@ export default tseslint.config(
         'error',
         {
           name: 'confirm',
-          message: '`confirm` запрещён. Нужен диалог — shadcn `AlertDialog` из `@/shared/ui`.',
+          message: '`confirm` запрещён. Нужен диалог — `Dialog` из `@/shared/ui/dialog`.',
         },
         {
           name: 'alert',
@@ -308,7 +308,7 @@ export default tseslint.config(
         },
         {
           name: 'prompt',
-          message: '`prompt` запрещён. Нужен ввод — форма на shadcn `Dialog`.',
+          message: '`prompt` запрещён. Нужен ввод — форма в `Dialog`.',
         },
       ],
     },

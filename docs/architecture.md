@@ -11,7 +11,7 @@ FSD — модель зависимостей, а не церемония. По 
 - Слайс, сегмент и папка появляются вместе с кодом. Пустых заготовок и `.gitkeep` «на будущее» нет.
 - Обобщаем со второго использования ([README §3](README.md#3-правила-для-ai-агента), правило двух).
 - Папка ради одного файла не заводится: `ui/message-bubble.tsx`, а не `ui/message-bubble/message-bubble.tsx`.
-- Файл больше 200–300 строк — сигнал делить. Исключение — сгенерированные shadcn-примитивы.
+- Файл больше 200–300 строк — сигнал делить.
 
 ## 2. Слои
 
@@ -38,7 +38,7 @@ shared    ← без предметной области: http-клиент, ui-
 
 ### `app/`
 
-`main.tsx`, `App.tsx`, `router.tsx`, `providers/` (QueryClient, Toaster), `styles/index.css`
+`main.tsx`, `App.tsx`, `router.tsx`, `providers/` (QueryClient), `styles/index.css`
 (вся конфигурация Tailwind). Запуск фоновых процессов (опрос уведомлений) — явный, здесь или
 в хуке верхнего уровня, а не побочным эффектом импорта. Может импортировать всё.
 
@@ -82,32 +82,39 @@ features/<slug>/
 ### `shared/`
 
 - `shared/api/` — http-клиент GREEN-API и типизированная ошибка. Без доменных репозиториев.
-- `shared/ui/` — shadcn-примитивы и свои примитивы без домена (`gate.tsx`, `spinner.tsx`).
+- `shared/ui/` — примитивы без домена по дизайн-спеке ([ui §3](ui.md#3-примитивы-sharedui)).
 - `shared/lib/` — утилиты (`cn.ts`, `notify.ts`, `format-time.ts`).
 - `shared/config/` — env и константы конфигурации.
 - `shared/consts/` — `routes.ts` и прочие константы.
 
 Сегменты — по назначению. ❌ `hooks/`, `types/`, `components/`, `utils/`, `helpers/`.
 
-## 4. Предметная раскладка (ориентир)
+## 4. Предметная раскладка
 
-| Код                                                        | Куда                                                           |
-| ---------------------------------------------------------- | -------------------------------------------------------------- |
-| `idInstance`, `apiTokenInstance`, `apiUrl`, флаг входа     | `entities/session/model/session.store.ts`                      |
-| Чат (id, номер телефона, последнее сообщение)              | `entities/chat/model/`                                         |
-| Сообщение (id, направление, текст, время, статус)          | `entities/message/model/`                                      |
-| `sendMessage`, `receiveNotification`, `deleteNotification` | `entities/*/api/*-repository.ts`                               |
-| Опрос очереди уведомлений                                  | `entities/message/model/` (сервис без React) + запуск в `app/` |
-| Форма входа                                                | `features/sign-in/`                                            |
-| Создание чата по номеру                                    | `features/create-chat/`                                        |
-| Отправка сообщения                                         | `features/send-message/`                                       |
-| Список чатов, окно переписки                               | `widgets/chat-sidebar/`, `widgets/chat-window/`                |
+| Слой / слайс                   | Что внутри                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| `entities/session`             | креды, «Запомнить меня», статус инстанса, `getStateInstance`, хранилище session/local |
+| `entities/chat`                | чат, `checkAccount`, номер: нормализация / валидация / формат, аватар, элемент списка |
+| `entities/message`             | сообщение, статусы, `sendMessage`, пузырь, разделитель дат                            |
+| `features/sign-in`             | форма входа + проверка кредов                                                         |
+| `features/instance-status`     | блокирующие экраны статусов, «Проверить снова», автоперепроверка `starting`           |
+| `features/restore-session`     | сплэш, проверка сохранённых кредов при старте, «Нет соединения»                       |
+| `features/sign-out`            | кнопка «Выйти» + полная очистка                                                       |
+| `features/toggle-theme`        | кнопка темы                                                                           |
+| `features/create-chat`         | форма «Новый чат»                                                                     |
+| `features/send-message`        | поле ввода, очередь отправки, «Повторить»                                             |
+| `widgets/status-banners`       | баннеры сети и `suspended`                                                            |
+| `widgets/chat-sidebar`         | шапка сайдбара + список чатов + пустое состояние                                      |
+| `widgets/chat-window`          | шапка чата + лента + поле ввода                                                       |
+| `pages/sign-in`, `pages/chats` | композиция экранов                                                                    |
+| `app/`                         | провайдеры, роутер, гарды, ErrorBoundary, запуск/остановка сервисов                   |
 
-Окончательная раскладка — по ТЗ и дизайн-спеке; расхождение → правка этого раздела.
+Сброс всех доменных сторов при выходе — `features/sign-out/model`, он вправе вызвать очистку каждой сущности:
+features импортируют entities.
 
 ## 5. Роутинг
 
-- Все роуты собираются в `app/router.tsx`. Layout — через layout-route и `<Outlet />`.
+- Все роуты — в `app/router.tsx`. Layout — через layout-route и `<Outlet />`.
 - Пути — только константы из `shared/consts/routes.ts`:
   ```ts
   export const ROUTES = {
@@ -116,7 +123,11 @@ features/<slug>/
     CHAT: (chatId: string) => `/chat/${encodeURIComponent(chatId)}`,
   } as const
   ```
-- Гард — `<ProtectedRoute />` / `<PublicRoute />` в роутере, не обёрткой на странице и не HOC.
+- Открытый чат — в URL (`/chat/:chatId`), а не в сторе: на mobile URL решает, что показать — список или чат,
+  «Назад» браузера работает сам.
+- Гарды — `<RequireSession />` / `<RequireGuest />` layout-роутами в роутере, не HOC и не обёртка на странице.
+- Статусы инстанса и сплэш — состояние, а не роуты: они живут внутри страницы входа / гарда.
+- `ErrorBoundary` — в `app/`, оборачивает роутер; экран сбоя умеет выйти из сессии.
 
 ## Что запрещено
 

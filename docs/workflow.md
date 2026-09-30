@@ -51,17 +51,16 @@ Scope — слайс (`entities/message`, `features/send-message`) или обл
 feat(entities/message): add notification poller
 fix(features/send-message): keep draft when sending fails
 docs(rules): add green-api data rules
-build(infra): add tailwind and shadcn
+build(infra): add tailwind and design tokens
 ```
 
 ## 5. Проверки
 
-| Когда                            | Что                                                                                         |
-| -------------------------------- | ------------------------------------------------------------------------------------------- |
-| Перед каждым коммитом            | `npm run check` (typecheck + lint + format:check + test)                                    |
-| Перед push / сдачей              | `npm run build` + ручной сценарий ([testing §5](testing.md#5-ручная-проверка-перед-сдачей)) |
-| CI (`.github/workflows/ci.yml`)  | `npm ci` → `check` → `build`                                                                |
-| pre-commit (husky + lint-staged) | [инфра]                                                                                     |
+| Когда                           | Что                                                                                         |
+| ------------------------------- | ------------------------------------------------------------------------------------------- |
+| Перед каждым коммитом           | `npm run check` (typecheck + lint + format:check + test)                                    |
+| Перед push / сдачей             | `npm run build` + ручной сценарий ([testing §5](testing.md#5-ручная-проверка-перед-сдачей)) |
+| CI (`.github/workflows/ci.yml`) | `npm ci` → `check` → `build`                                                                |
 
 Красный `check` — не коммитим. `--no-verify` — запрещён.
 
@@ -76,7 +75,7 @@ build(infra): add tailwind and shadcn
 | **P2**  | Нейминг, читаемость, мелочи                                                                                                                                                     | Если дёшево; иначе — в список открытых вопросов |
 
 **Не флагаем:** форматирование и порядок импортов (делают инструменты); решения, записанные в `docs/`;
-длинные className в сгенерированных shadcn; вкусовщину без правила; отсутствие абстракций «на вырост».
+вкусовщину без правила; отсутствие абстракций «на вырост».
 
 ## 7. Зависимости
 

@@ -1,113 +1,125 @@
 # Данные — GREEN-API, запросы, состояние
 
 Смежные темы: [architecture.md](architecture.md), [code-style.md](code-style.md), [testing.md](testing.md).
-
-ТЗ ограничивает API тремя методами: **SendMessage**, **ReceiveNotification**, **DeleteNotification**.
-Истории чатов с сервера нет — переписка копится на клиенте с момента входа.
+Источник требований — спринты в `design/` и `spints/`; здесь — как это устроено в коде.
 
 ## 1. Контракт GREEN-API
 
-Базовый URL запроса: `{apiUrl}/waInstance{idInstance}/{method}/{apiTokenInstance}`.
+URL метода: `{apiUrl}/waInstance{idInstance}/{method}/{apiTokenInstance}`.
 
-| Метод                 | HTTP     | Суть                                                                                     |
-| --------------------- | -------- | ---------------------------------------------------------------------------------------- |
-| `sendMessage`         | `POST`   | body `{ chatId, message }` → `{ idMessage }`. Текст до 4000 символов                     |
-| `receiveNotification` | `GET`    | `?receiveTimeout=N` — long-poll; `null`, если очередь пуста, иначе `{ receiptId, body }` |
-| `deleteNotification`  | `DELETE` | `/{receiptId}` — подтвердить обработку и снять из очереди                                |
+| Метод                 | HTTP     | Где используется                     | Суть                                                            |
+| --------------------- | -------- | ------------------------------------ | --------------------------------------------------------------- |
+| `getStateInstance`    | `GET`    | вход, восстановление сессии, повторы | `{ stateInstance }` — статус инстанса                           |
+| `checkAccount`        | `POST`   | создание чата                        | body `{ phoneNumber }` → есть ли аккаунт MAX и его `chatId`     |
+| `sendMessage`         | `POST`   | отправка                             | body `{ chatId, message }` → `{ idMessage }`, текст ≤ 4000      |
+| `receiveNotification` | `GET`    | получение (спринт 3)                 | long-poll `?receiveTimeout=N`; `null` или `{ receiptId, body }` |
+| `deleteNotification`  | `DELETE` | получение (спринт 3)                 | `/{receiptId}` — подтвердить обработку                          |
 
-- `chatId` личного чата по номеру — `<цифры>@c.us` (`79991234567@c.us`). Сборка и нормализация номера —
-  одна чистая функция в `entities/chat/lib/`, покрыта тестом.
-- Очередь — FIFO, уведомление живёт 24 часа. **Пока не вызван `deleteNotification`, следующее не придёт.**
-- В инстансе должен быть пустой `webhookUrl` и включены входящие уведомления — это настройка
-  в кабинете GREEN-API, в README проекта для проверяющего.
-- Точные имена `typeWebhook`/`typeMessage` и форма `body` для MAX сверяются с документацией
-  при реализации и фиксируются DTO-типами в `entities/message/api/message-dto.ts`.
+Статусы инстанса: `authorized`, `suspended` (пускаем + баннер), `notAuthorized`, `starting`, `blocked`,
+`pendingPassword` (блокирующие экраны). Неизвестное значение трактуем как `notAuthorized`.
 
-## 2. HTTP-клиент
+- Отправка — **только по `chatId`** из `checkAccount`, не по номеру телефона.
+- Точная форма ответов (`checkAccount`, уведомления MAX) фиксируется DTO-типами и zod-схемой
+  в `entities/*/api/*-dto.ts`. Ответ сервера **валидируется** на входе: невалидный → `ApiError('unknown')`.
+- `apiTokenInstance` — секрет: не логируем, не кладём в URL страницы, не показываем в текстах.
 
-- Один axios-инстанс — `shared/api/green-api-client.ts`. Второй `axios.create()` не заводим.
-- Клиент не знает, где лежат учётные данные: repository получает `credentials` аргументом
-  (`{ apiUrl, idInstance, apiTokenInstance }`). URL собирает одна функция `buildMethodUrl(credentials, method)`.
-- Ошибки транспорта приводятся к `ApiError` (`shared/api/api-error.ts`): `kind: 'network' | 'unauthorized' | 'server' | 'aborted'`.
-  401/403 от GREEN-API — `unauthorized` (неверный id/token).
-- `apiTokenInstance` — секрет: не логируем, не кладём в URL страницы, не показываем в ошибках.
+## 2. HTTP-клиент и ошибки
+
+- Один axios-инстанс — `shared/api/green-api-client.ts`, `timeout: 15_000`. Второй `axios.create()` не заводим.
+- Клиент не знает, где лежат креды: repository получает `credentials` аргументом.
+  URL собирает `buildMethodUrl(credentials, method, suffix?)` из `shared/api/`.
+- Любая ошибка транспорта приводится к `ApiError` (`shared/api/api-error.ts`) функцией `toApiError(error)`:
+
+| `kind`          | Когда                                     |
+| --------------- | ----------------------------------------- |
+| `offline`       | `navigator.onLine === false` / нет ответа |
+| `timeout`       | 15 с без ответа                           |
+| `unauthorized`  | 401 / 403 без признака `suspended`        |
+| `suspended`     | 403 с признаком ограничения аккаунта      |
+| `badRequest`    | 400                                       |
+| `quotaExceeded` | 466 — лимит тарифа                        |
+| `checkLimit`    | 469 — лимит проверок номеров              |
+| `rateLimited`   | 429                                       |
+| `server`        | 5xx                                       |
+| `aborted`       | запрос отменён — не ошибка для UI         |
+| `unknown`       | всё остальное, невалидный ответ           |
+
+- Текст для пользователя — **не в `ApiError`**. Каждая фича держит свою карту
+  `Record<ApiErrorKind, string>` (тексты в спринтах разные для входа, создания чата и отправки).
+- Сырой текст ответа сервера пользователю не показываем никогда.
 
 ## 3. Repository — только HTTP
 
 ```ts
-// entities/message/api/message-repository.ts
-export const messageRepository = {
-  send: (credentials: Credentials, input: SendMessageDto) =>
+// entities/session/api/session-repository.ts
+export const sessionRepository = {
+  getState: (credentials: Credentials, signal?: AbortSignal) =>
     greenApiClient
-      .post<SendMessageResponseDto>(buildMethodUrl(credentials, 'sendMessage'), input)
-      .then((r) => r.data),
-  receive: (credentials: Credentials, signal: AbortSignal) => /* GET receiveNotification */,
-  remove: (credentials: Credentials, receiptId: number) => /* DELETE deleteNotification */,
+      .get<unknown>(buildMethodUrl(credentials, 'getStateInstance'), { signal })
+      .then((r) => stateInstanceDtoSchema.parse(r.data)),
 }
 ```
 
-В repository **нельзя**: хуки React, `notify`, маппинг DTO → модель, retry, доступ к сторам.
-DTO — как по сети (`idMessage`, `receiptId`, `typeWebhook`). Модель — в `model/*.types.ts`, маппер — в `lib/`.
+В repository **нельзя**: хуки React, тексты, маппинг DTO → модель, retry, доступ к сторам.
+Модель — `model/*.types.ts`, маппер — `lib/`.
 
-## 4. Отправка — `useMutation`
+## 4. TanStack Query
 
-- `entities/message/api/use-send-message.ts` — `useMutation` над `messageRepository.send`.
-- Поток: добавить сообщение в стор со статусом `pending` → запрос → `sent` (с `idMessage`) или `failed`.
-- Ошибка → `notify.apiError(error)` в `onError` на уровне `features/send-message/model`.
-- `mutations.retry: 0` — повтор отправки только действием пользователя.
-
-## 5. Получение — сервис опроса
-
-Опрос — **не `useQuery`**: это бесконечный цикл с подтверждением, а не кэшируемые данные.
-
-- Сервис без React: `entities/message/model/notification-poller.ts`, `start(credentials)` / `stop()`.
-- Цикл: `receive` → если `null`, следующая итерация → иначе обработать → **всегда** `remove(receiptId)`,
-  в том числе для неизвестных и нетекстовых уведомлений (иначе очередь встанет).
-- Обработка: маппер уведомления → `Message | null`; текстовое — в стор, остальное — игнор.
-- Дедуп по `idMessage`: своё отправленное сообщение может вернуться уведомлением.
-- Один экземпляр цикла: повторный `start` без `stop` — no-op (StrictMode монтирует дважды).
-- `AbortController` на цикл: `stop()` и выход из сессии обрывают запрос в полёте; `AbortError` — не ошибка.
-- Сетевая ошибка — пауза с backoff (константы), не тугой цикл. `unauthorized` — остановка и выход из сессии.
-- Запуск/остановка — явно, из `app/` по флагу сессии (эффект с очисткой), а не при импорте модуля.
-
-## 6. TanStack Query
-
-- `QueryClient` — `app/providers/query-provider.tsx`: `queries: { retry: 1, refetchOnWindowFocus: false }`,
+- `QueryClient` — `app/providers/query-provider.tsx`: `queries: { retry: false, refetchOnWindowFocus: false }`,
   `mutations: { retry: 0 }`. Devtools — только в `import.meta.env.DEV`.
+- Проверка кредов при входе, `checkAccount`, `sendMessage` — `useMutation` (действие пользователя, не кэш).
+- Хук возвращает результат `useMutation`/`useQuery` как есть, без переупаковки.
 - Если появляется `useQuery` — ключ только через фабрику `<entity>Keys`, `staleTime` задан осознанно.
-- Хук возвращает результат `useQuery`/`useMutation` как есть, без переупаковки в `{ data, loading }`.
 
-## 7. Zustand — клиентское состояние
+## 5. Фоновые процессы — сервисы без React
 
-| Стор                                      | Что хранит                                                          |
-| ----------------------------------------- | ------------------------------------------------------------------- |
-| `entities/session/model/session.store.ts` | `credentials: Credentials \| null`, производное `isAuthenticated`   |
-| `entities/chat/model/chat.store.ts`       | чаты: `ids` + `byId` (id, номер, время последней активности)        |
-| `entities/message/model/message.store.ts` | сообщения по чату: `byChatId: Record<ChatId, MessageId[]>` + `byId` |
+Автоперепроверка `starting` (10 с × 30), очередь отправки, опрос уведомлений (спринт 3) — **не хуки и не `useEffect`-циклы**,
+а модули `model/` с явным `start/stop`:
+
+- Один экземпляр на процесс; повторный `start` без `stop` — no-op (StrictMode монтирует дважды).
+- `AbortController` на процесс: `stop()`, выход из сессии и размонтирование обрывают запрос в полёте.
+- Таймеры и зависимости (repository, `now`, `sleep`) передаются фабрике — сервис тестируется на фейковых таймерах.
+- React подписывается на результат через стор; запускает/останавливает — эффект с очисткой или обработчик.
+
+## 6. Zustand — клиентское состояние
+
+| Стор                                      | Что хранит                                                              |
+| ----------------------------------------- | ----------------------------------------------------------------------- |
+| `entities/session/model/session.store.ts` | `credentials`, `remember`, `instanceState`, скрыт ли баннер `suspended` |
+| `entities/chat/model/chat.store.ts`       | чаты `ids` + `byId`, `phone → chatId`, черновики по `chatId`            |
+| `entities/message/model/message.store.ts` | сообщения: `idsByChat` + `byId`, статус и ошибка отправки               |
+| `shared/lib/theme/theme.store.ts`         | тема `light` / `dark`                                                   |
 
 - Форма — нормализованная (`ids` + `byId`), обновления иммутабельные.
-- Компоненты читают через селекторы с узким результатом: `useMessageStore((s) => s.byId[id])`, не весь стор.
-- Действия стора — синхронные чистые переходы. Асинхронность — в сервисах/хуках, не в сторе.
-- Серверный кэш в Zustand не дублируем; URL-состояние (открытый чат) — в роуте, не в сторе.
-- Выход: `stop()` опроса → очистка всех сторов → `queryClient.clear()` → переход на `ROUTES.SIGN_IN`.
+- Компоненты читают селекторами с узким результатом (примитив или стабильная ссылка), не весь стор.
+- Действия стора — синхронные переходы. Асинхронность — в сервисах/хуках `model/`.
+- Выход из сессии: остановить все сервисы → очистить все доменные сторы → `queryClient.clear()` → удалить креды.
 
-### Учётные данные — `sessionStorage`
+### Учётные данные и «Запомнить меня»
 
-`session.store` хранит `credentials` через `persist` Zustand в `sessionStorage` (ключ `max-chat:session`).
+- Сохраняется один объект `{ idInstance, apiTokenInstance, apiUrl }` — **только** при статусе `authorized`/`suspended`.
+- «Запомнить меня» выключен → `sessionStorage` (до закрытия вкладки), включён → `localStorage`.
+  Хранилище выбирает `persist` Zustand через свой `StateStorage`, при смене режима вторая копия удаляется.
+- При старте креды не принимаются на веру: сплэш → `getStateInstance` → по статусу. Неверные креды — удаляем,
+  нет сети — **не** удаляем.
+- Бэкенда нет, httpOnly-cookie невозможны: ключ пользователя живёт в его браузере — это осознанный компромисс.
+- Чаты и сообщения до спринта 3 не персистятся.
+- Тема — `localStorage` (`max-chat:theme`), дефолт — `prefers-color-scheme`. Выставляется inline-скриптом в
+  `index.html` до рендера, чтобы не мигала.
 
-- Почему не память: вход — ручной ввод двух длинных значений; терять их на каждом F5 — плохой UX для проверяющего.
-- Почему не `localStorage`: `sessionStorage` живёт до закрытия вкладки и не шарится между вкладками —
-  секрет не лежит на диске бессрочно, а две вкладки не запускают два цикла опроса по одной очереди.
-- Бэкенда нет, httpOnly-cookie невозможны — ключ GREEN-API в любом случае в браузере пользователя, и это его ключ.
-- В storage — только `credentials`. Чаты и сообщения не персистятся (истории с сервера нет, ТЗ её не требует).
-- Выход удаляет запись из storage. `unauthorized` от API → выход.
+## 7. Моки
+
+- MSW (`src/mocks/`) — единственный способ мокать GREEN-API: в тестах (`msw/node`) и в dev (`VITE_API_MOCKS=true`).
+- В dev-моках сценарий выбирается `idInstance` (таблица в `src/mocks/README.md`): так на демо показываются
+  все ошибочные статусы без реального инстанса.
+- В prod-сборку моки не попадают (динамический импорт под `import.meta.env.DEV`).
 
 ## Что запрещено
 
-- ❌ Методы GREEN-API сверх ТЗ без согласования.
+- ❌ Методы GREEN-API сверх перечисленных без обновления этого файла.
 - ❌ Прямой вызов axios из `features`/`widgets`/`pages` — ESLint; второй axios-инстанс — ревью.
-- ❌ Забыть `deleteNotification` для любого полученного уведомления — тест.
-- ❌ Второй параллельный цикл опроса, цикл без `AbortController` и без остановки — тест, ревью.
-- ❌ `apiTokenInstance` в логах, URL страницы, текстах ошибок — ревью.
-- ❌ Асинхронность в действиях стора, серверные данные в Zustand без причины — ревью.
-- ❌ Строковый queryKey мимо фабрики — ревью.
+- ❌ Ответ сервера без валидации схемой, сырой текст ответа в UI — ревью.
+- ❌ Тексты ошибок в `ApiError` или repository — ревью.
+- ❌ Фоновый процесс в `useEffect`-цикле, без `stop` и `AbortController` — тест, ревью.
+- ❌ `apiTokenInstance` в логах, URL страницы, текстах — тест, ревью.
+- ❌ Сохранение кредов до успешной проверки статуса — тест.
