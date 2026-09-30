@@ -127,8 +127,13 @@ const ENTITY_PRIVATE_PATTERNS = [
 // Транспорт доступен только из entities/<slice>/api и shared/api.
 const TRANSPORT_PATTERNS = [
   {
-    group: ['@/shared/api/*'],
-    message: 'HTTP-клиент — только в `entities/*/api`. Выше слоя entities — через хуки сущностей.',
+    group: [
+      '@/shared/api/green-api-client',
+      '@/shared/api/build-method-url',
+      '@/shared/api/parse-response',
+    ],
+    message:
+      'HTTP-транспорт — только в `entities/*/api`. Выше слоя entities — через api сущностей.',
   },
 ]
 

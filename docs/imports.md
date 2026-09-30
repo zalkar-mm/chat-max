@@ -51,7 +51,8 @@ import { messageSchema } from '@/entities/message/model/message.schema' // ❌ �
 Нужен repository снаружи — значит, в вызывающем коде делается то, что должно быть в хуке слайса.
 Оборачивай в хук. Барьер держит ESLint `no-restricted-imports`.
 
-Выше `entities` запрещены также `@/shared/api/*` и `axios` — транспорт только через хуки сущностей.
+Выше `entities` запрещены также транспорт (`shared/api/green-api-client`, `build-method-url`, `parse-response`)
+и `axios`. Типы-контракты `shared/api/api-error`, `shared/api/credentials` доступны всем слоям.
 
 ## 5. Порядок групп
 
