@@ -13,32 +13,41 @@ const dismissSuspendedBanner = () => {
   useSessionStore.getState().dismissSuspendedBanner()
 }
 
-/** Баннеры под шапкой: ошибка выше предупреждения, контент сдвигается, а не перекрывается. */
+/**
+ * Баннеры под шапкой: ошибка выше предупреждения, контент сдвигается, а не перекрывается.
+ * Live-регионы смонтированы всегда: скринридер объявляет текст, появившийся внутри уже существующего региона.
+ */
 export function StatusBanners() {
   const connection = useConnectionStatus()
   const isSuspendedVisible = useIsSuspendedBannerVisible()
+  const isOffline = connection === ConnectionStatus.Offline
+  const isRestored = connection === ConnectionStatus.Restored
 
   return (
     <div className="shrink-0">
-      <Gate when={connection === ConnectionStatus.Offline}>
-        <Banner tone="error" icon={<WifiOff className="size-5" aria-hidden />}>
-          Нет соединения. Переподключаемся…
-        </Banner>
-      </Gate>
-      <Gate when={isSuspendedVisible}>
-        <Banner
-          tone="warn"
-          icon={<TriangleAlert className="size-5" aria-hidden />}
-          onDismiss={dismissSuspendedBanner}
-        >
-          Аккаунт MAX временно ограничен: сообщения можно отправлять только контактам
-        </Banner>
-      </Gate>
-      <Gate when={connection === ConnectionStatus.Restored}>
-        <Banner tone="ok" icon={<CheckCircle2 className="size-5" aria-hidden />}>
-          Соединение восстановлено
-        </Banner>
-      </Gate>
+      <div role="alert">
+        <Gate when={isOffline}>
+          <Banner tone="error" icon={<WifiOff className="size-5" aria-hidden />}>
+            Нет соединения. Переподключаемся…
+          </Banner>
+        </Gate>
+      </div>
+      <div role="status">
+        <Gate when={isSuspendedVisible}>
+          <Banner
+            tone="warn"
+            icon={<TriangleAlert className="size-5" aria-hidden />}
+            onDismiss={dismissSuspendedBanner}
+          >
+            Аккаунт MAX временно ограничен: сообщения можно отправлять только контактам
+          </Banner>
+        </Gate>
+        <Gate when={isRestored}>
+          <Banner tone="ok" icon={<CheckCircle2 className="size-5" aria-hidden />}>
+            Соединение восстановлено
+          </Banner>
+        </Gate>
+      </div>
     </div>
   )
 }

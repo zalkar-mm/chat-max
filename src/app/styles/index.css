@@ -13,6 +13,7 @@
   --breakpoint-md: 900px;
   --breakpoint-xl: 1280px;
 
+  /* Абсолютный белый — по спеке: иконка логотипа, текст и иконки на акценте в обеих темах. */
   --color-white: #fff;
   --animate-spinner: spin 800ms linear infinite;
 }
@@ -97,6 +98,7 @@
   --radius-xl: var(--r-xl);
   --radius-bubble-tail: var(--bubble-tail);
   --radius-logo: 14px;
+  --radius-checkbox: var(--r-bubble-stack);
 
   --shadow-scroll-fab: var(--scroll-fab-shadow);
   --shadow-modal: 0 12px 40px rgb(0 0 0 / 0.24);

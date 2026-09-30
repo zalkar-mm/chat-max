@@ -6,6 +6,8 @@ import { toApiError } from './api-error'
 
 export const greenApiClient = axios.create({
   timeout: API_TIMEOUT_MS,
+  // Таймаут приходит как ETIMEDOUT, а не как общий ECONNABORTED (им же браузер отмечает обрыв).
+  transitional: { clarifyTimeoutError: true },
   headers: { 'Content-Type': 'application/json' },
 })
 

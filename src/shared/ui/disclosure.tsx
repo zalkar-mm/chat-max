@@ -8,12 +8,11 @@ type DisclosureProps = {
   children: ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  defaultOpen?: boolean
 }
 
-export function Disclosure({ label, children, open, onOpenChange, defaultOpen }: DisclosureProps) {
+export function Disclosure({ label, children, open, onOpenChange }: DisclosureProps) {
   return (
-    <Collapsible.Root open={open} onOpenChange={onOpenChange} defaultOpen={defaultOpen}>
+    <Collapsible.Root open={open} onOpenChange={onOpenChange}>
       <Collapsible.Trigger className="group inline-flex h-10 cursor-pointer items-center gap-1 typo-action-small text-link">
         {label}
         <ChevronDown

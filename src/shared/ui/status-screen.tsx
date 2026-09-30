@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect, useRef } from 'react'
 
 import { cn } from '../lib/cn'
 
@@ -13,6 +13,8 @@ type StatusScreenProps = {
   description: ReactNode
   children: ReactNode
   footnote?: ReactNode
+  /** Перевести фокус на заголовок при показе: смена экрана без этого не слышна скринридеру. */
+  focusTitle?: boolean
 }
 
 const VISUAL_TONE_CLASSES: Record<StatusScreenTone, string> = {
@@ -27,7 +29,14 @@ export function StatusScreen({
   description,
   children,
   footnote,
+  focusTitle = false,
 }: StatusScreenProps) {
+  const titleRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    if (focusTitle) titleRef.current?.focus()
+  }, [focusTitle, title])
+
   const visualCn = cn(
     'flex size-24 shrink-0 items-center justify-center rounded-full bg-tertiary',
     VISUAL_TONE_CLASSES[tone],
@@ -37,7 +46,9 @@ export function StatusScreen({
   return (
     <div className="mx-auto flex w-full max-w-(--auth-card-w) flex-col items-center text-center">
       <div className={visualCn}>{visual}</div>
-      <h1 className="mt-6 typo-subheader text-primary">{title}</h1>
+      <h1 ref={titleRef} tabIndex={-1} className="mt-6 typo-subheader text-primary outline-none">
+        {title}
+      </h1>
       <p className="mt-2 typo-body text-secondary">{description}</p>
       <Gate when={hasFootnote}>
         <p className="mt-2 typo-description text-tertiary">{footnote}</p>

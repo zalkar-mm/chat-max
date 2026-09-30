@@ -42,6 +42,15 @@ describe('Задача 7 — экран «Что-то пошло не так»',
     expect(screen.getByRole('button', { name: 'Перезагрузить' })).toBeInTheDocument()
   })
 
+  it('4: подробности ошибки — только в режиме разработки, под раскрывашкой', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    renderCrash()
+    expect(import.meta.env.DEV).toBe(true)
+    expect(screen.queryByText(/boom/)).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Подробности' }))
+    expect(screen.getByText(/boom/)).toBeInTheDocument()
+  })
+
   it('3: «Выйти» → экран входа, сессия очищена', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     useSessionStore.getState().startSession({

@@ -8,6 +8,7 @@ import { IconButton } from './icon-button'
 
 type BannerTone = 'error' | 'warn' | 'ok'
 
+/** Сам баннер не live-регион: регион должен существовать до появления текста (см. StatusBanners). */
 type BannerProps = {
   tone: BannerTone
   icon: ReactNode
@@ -33,12 +34,6 @@ const ICON_CLASSES: Record<BannerTone, string> = {
   ok: 'text-banner-ok-icon',
 }
 
-const TONE_ROLE: Record<BannerTone, 'alert' | 'status'> = {
-  error: 'alert',
-  warn: 'status',
-  ok: 'status',
-}
-
 function BannerDismiss({ onDismiss, label }: BannerDismissProps) {
   if (!onDismiss) return null
 
@@ -57,7 +52,7 @@ export function Banner({ tone, icon, children, onDismiss, dismissLabel = 'Скр
   const iconCn = cn('flex shrink-0', ICON_CLASSES[tone])
 
   return (
-    <div role={TONE_ROLE[tone]} className={rootCn}>
+    <div className={rootCn}>
       <span className={iconCn}>{icon}</span>
       <div className="min-w-0 flex-1">{children}</div>
       <BannerDismiss onDismiss={onDismiss} label={dismissLabel} />

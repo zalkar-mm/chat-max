@@ -9,7 +9,6 @@ import { Gate } from './gate'
 import { IconButton } from './icon-button'
 
 export const Dialog = DialogPrimitive.Root
-export const DialogTrigger = DialogPrimitive.Trigger
 export const DialogClose = DialogPrimitive.Close
 
 type DialogContentPrimitiveProps = ComponentProps<typeof DialogPrimitive.Content>

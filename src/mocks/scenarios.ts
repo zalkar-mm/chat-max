@@ -40,7 +40,7 @@ export function getStateScenario(idInstance: string): StateScenario {
   const cached = cache.get(idInstance)
   if (cached) return cached
 
-  const create = SCENARIOS[idInstance.slice(-2)] ?? SCENARIOS['01']
+  const create = SCENARIOS[idInstance.slice(-2)]
   const scenario = create ? create() : constant('authorized')
   cache.set(idInstance, scenario)
   return scenario

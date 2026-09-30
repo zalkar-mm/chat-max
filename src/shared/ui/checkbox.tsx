@@ -23,7 +23,8 @@ export function Checkbox({
   disabled = false,
 }: CheckboxProps) {
   const hintId = `${id}-hint`
-  const describedBy = hint ? hintId : undefined
+  const hasHint = Boolean(hint)
+  const describedBy = hasHint ? hintId : undefined
 
   function handleCheckedChange(value: boolean | 'indeterminate') {
     onCheckedChange(value === true)
@@ -37,7 +38,7 @@ export function Checkbox({
         onCheckedChange={handleCheckedChange}
         disabled={disabled}
         aria-describedby={describedBy}
-        className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-bubble-tail border-[1.5px] border-checkbox bg-transparent text-white transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 data-[state=checked]:border-accent data-[state=checked]:bg-accent"
+        className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-checkbox border-[1.5px] border-checkbox bg-transparent text-white transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 data-[state=checked]:border-accent data-[state=checked]:bg-accent"
       >
         <CheckboxPrimitive.Indicator>
           <Check className="size-3.5" strokeWidth={3} aria-hidden />
@@ -47,7 +48,7 @@ export function Checkbox({
         <label htmlFor={id} className="cursor-pointer typo-body text-primary">
           {label}
         </label>
-        <Gate when={Boolean(hint)}>
+        <Gate when={hasHint}>
           <p id={hintId} className="mt-0.5 typo-description text-tertiary">
             {hint}
           </p>
