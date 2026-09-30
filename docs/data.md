@@ -25,24 +25,24 @@ URL метода: `{apiUrl}/waInstance{idInstance}/{method}/{apiTokenInstance}`.
 
 ## 2. HTTP-клиент и ошибки
 
-- Один axios-инстанс — `shared/api/green-api-client.ts`, `timeout: 15_000`. Второй `axios.create()` не заводим.
+- Один axios-инстанс — `shared/api/green-api-client.ts`, `timeout: 15_000`; интерцептор превращает любую ошибку в `ApiError`. Второй `axios.create()` не заводим.
 - Клиент не знает, где лежат креды: repository получает `credentials` аргументом.
   URL собирает `buildMethodUrl(credentials, method, suffix?)` из `shared/api/`.
 - Любая ошибка транспорта приводится к `ApiError` (`shared/api/api-error.ts`) функцией `toApiError(error)`:
 
-| `kind`          | Когда                                     |
-| --------------- | ----------------------------------------- |
-| `offline`       | `navigator.onLine === false` / нет ответа |
-| `timeout`       | 15 с без ответа                           |
-| `unauthorized`  | 401 / 403 без признака `suspended`        |
-| `suspended`     | 403 с признаком ограничения аккаунта      |
-| `badRequest`    | 400                                       |
-| `quotaExceeded` | 466 — лимит тарифа                        |
-| `checkLimit`    | 469 — лимит проверок номеров              |
-| `rateLimited`   | 429                                       |
-| `server`        | 5xx                                       |
-| `aborted`       | запрос отменён — не ошибка для UI         |
-| `unknown`       | всё остальное, невалидный ответ           |
+| `kind`          | Когда                                                                        |
+| --------------- | ---------------------------------------------------------------------------- |
+| `offline`       | `navigator.onLine === false` / нет ответа                                    |
+| `timeout`       | 15 с без ответа                                                              |
+| `unauthorized`  | 401 / 404 — неверный idInstance или токен                                    |
+| `forbidden`     | 403 — на входе = неверные креды, при отправке = аккаунт ограничен (спринт 2) |
+| `badRequest`    | 400                                                                          |
+| `quotaExceeded` | 466 — лимит тарифа                                                           |
+| `checkLimit`    | 469 — лимит проверок номеров                                                 |
+| `rateLimited`   | 429                                                                          |
+| `server`        | 5xx                                                                          |
+| `aborted`       | запрос отменён — не ошибка для UI                                            |
+| `unknown`       | всё остальное, невалидный ответ                                              |
 
 - Текст для пользователя — **не в `ApiError`**. Каждая фича держит свою карту
   `Record<ApiErrorKind, string>` (тексты в спринтах разные для входа, создания чата и отправки).
@@ -109,7 +109,9 @@ export const sessionRepository = {
 
 ## 7. Моки
 
-- MSW (`src/mocks/`) — единственный способ мокать GREEN-API: в тестах (`msw/node`) и в dev (`VITE_API_MOCKS=true`).
+- MSW (`src/mocks/`) — единственный способ мокать GREEN-API: в тестах (`msw/node`) и в dev (`VITE_API_MOCKS=true npm run dev`).
+- Хост по умолчанию — `https://3100.api.green-api.com` (`shared/config/env.ts`); из `idInstance` он не выводится,
+  поэтому поле «API URL» остаётся в блоке «Дополнительно».
 - В dev-моках сценарий выбирается `idInstance` (таблица в `src/mocks/README.md`): так на демо показываются
   все ошибочные статусы без реального инстанса.
 - В prod-сборку моки не попадают (динамический импорт под `import.meta.env.DEV`).
