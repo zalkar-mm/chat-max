@@ -18,7 +18,7 @@
 | Клиентское состояние | Zustand (+ `persist` для кредов и темы)                                            |
 | Роутинг              | React Router v7 (data router)                                                      |
 | Формы                | react-hook-form + zod                                                              |
-| Сбой рендера         | react-error-boundary                                                               |
+| Сбой рендера         | `errorElement` корневого роута React Router                                        |
 | Моки API             | MSW — тесты и dev-сценарии                                                         |
 
 ESLint 10 не используем: плагины react и jsx-a11y его пока не поддерживают.
