@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest'
 import { App } from './App'
 
 describe('App', () => {
-  it('renders', () => {
+  it('рендерится', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { name: /max chat/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'MAX-чат' })).toBeInTheDocument()
   })
 })

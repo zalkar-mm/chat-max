@@ -1,28 +1,169 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+@import 'tailwindcss';
+@import '../../styles/tokens.css';
+
+/*
+ * Tailwind ссылается на токены дизайна (src/styles/tokens.css) и не хранит своих значений.
+ * Палитра, радиусы и брейкпоинты Tailwind по умолчанию отключены: только то, что есть в спеке.
+ */
+@theme {
+  --color-*: initial;
+  --radius-*: initial;
+  --breakpoint-*: initial;
+
+  --breakpoint-md: 900px;
+  --breakpoint-xl: 1280px;
+
+  --color-white: #fff;
+  --animate-spinner: spin 800ms linear infinite;
 }
 
-html,
-body,
-#root {
-  height: 100%;
+@theme inline {
+  --font-sans: var(--font);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-pressed: var(--accent-pressed);
+  --color-accent-selected: var(--accent-selected);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-attention: var(--attention);
+
+  --background-color-surface: var(--bg-surface);
+  --background-color-primary: var(--bg-primary);
+  --background-color-secondary: var(--bg-secondary);
+  --background-color-tertiary: var(--bg-tertiary);
+  --background-color-card: var(--bg-card);
+  --background-color-chat: var(--bg-chat);
+  --background-color-overlay: var(--overlay);
+  --background-color-modal: var(--modal);
+  --background-color-input: var(--input-bg);
+  --background-color-button-secondary: var(--button-secondary);
+  --background-color-button-secondary-hover: var(--button-secondary-hover);
+  --background-color-button-secondary-pressed: var(--button-secondary-pressed);
+  --background-color-button-primary-disabled: var(--button-primary-disabled);
+  --background-color-ghost-hover: var(--ghost-hover);
+  --background-color-ghost-pressed: var(--ghost-pressed);
+  --background-color-cell-hover: var(--cell-hover);
+  --background-color-cell-pressed: var(--cell-pressed);
+  --background-color-cell-selected: var(--cell-selected);
+  --background-color-bubble-in: var(--bubble-in-bg);
+  --background-color-bubble-out: var(--bubble-out-bg);
+  --background-color-counter: var(--counter-bg);
+  --background-color-banner-error: var(--banner-error-bg);
+  --background-color-banner-warn: var(--banner-warn-bg);
+  --background-color-banner-ok: var(--banner-ok-bg);
+  --background-color-alert-error: var(--alert-error-bg);
+  --background-color-date-pill: var(--date-pill-bg);
+  --background-color-scroll-fab: var(--scroll-fab-bg);
+
+  --text-color-primary: var(--text-primary);
+  --text-color-secondary: var(--text-secondary);
+  --text-color-tertiary: var(--text-tertiary);
+  --text-color-mute: var(--text-mute);
+  --text-color-inverse: var(--text-inverse);
+  --text-color-link: var(--text-link);
+  --text-color-negative-strong: var(--text-negative-strong);
+  --text-color-icon-primary: var(--icon-primary);
+  --text-color-icon-secondary: var(--icon-secondary);
+  --text-color-icon-tertiary: var(--icon-tertiary);
+  --text-color-icon-mute: var(--icon-mute);
+  --text-color-bubble-in: var(--bubble-in-text);
+  --text-color-bubble-in-time: var(--bubble-in-time);
+  --text-color-bubble-out: var(--bubble-out-text);
+  --text-color-bubble-out-time: var(--bubble-out-time);
+  --text-color-bubble-out-status: var(--bubble-out-status);
+  --text-color-bubble-status-error: var(--bubble-status-error);
+  --text-color-counter: var(--counter-text);
+  --text-color-banner-error: var(--banner-error-fg);
+  --text-color-banner-error-icon: var(--banner-error-icon);
+  --text-color-banner-warn: var(--banner-warn-fg);
+  --text-color-banner-warn-icon: var(--banner-warn-icon);
+  --text-color-banner-ok: var(--banner-ok-fg);
+  --text-color-banner-ok-icon: var(--banner-ok-icon);
+  --text-color-date-pill: var(--date-pill-fg);
+
+  --border-color-divider: var(--divider);
+  --border-color-divider-soft: var(--divider-soft);
+  --border-color-stroke-secondary: var(--stroke-secondary);
+  --border-color-stroke-tertiary: var(--stroke-tertiary);
+  --border-color-checkbox: var(--checkbox-border);
+  --border-color-alert-error: var(--alert-error-border);
+
+  --radius-xs: var(--r-xs);
+  --radius-s: var(--r-s);
+  --radius-m-half: var(--r-m-half);
+  --radius-m: var(--r-m);
+  --radius-l: var(--r-l);
+  --radius-xl: var(--r-xl);
+  --radius-bubble-tail: var(--bubble-tail);
+  --radius-logo: 14px;
+
+  --shadow-scroll-fab: var(--scroll-fab-shadow);
+  --shadow-modal: 0 12px 40px rgb(0 0 0 / 0.24);
 }
 
-body {
-  margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
+@utility typo-hero {
+  font: var(--font-hero);
+}
+@utility typo-header {
+  font: var(--font-header);
+}
+@utility typo-subheader {
+  font: var(--font-subheader);
+}
+@utility typo-title {
+  font: var(--font-title);
+}
+@utility typo-body {
+  font: var(--font-body);
+  letter-spacing: var(--ls-body);
+}
+@utility typo-body-strong {
+  font: var(--font-body-strong);
+  letter-spacing: var(--ls-body);
+}
+@utility typo-detail {
+  font: var(--font-detail);
+}
+@utility typo-description {
+  font: var(--font-description);
+  letter-spacing: var(--ls-desc);
+}
+@utility typo-label {
+  font: var(--font-label);
+  letter-spacing: var(--ls-label);
+}
+@utility typo-bubble-label {
+  font: var(--font-bubble-label);
+}
+@utility typo-action-large {
+  font: var(--font-action-large);
+}
+@utility typo-action-small {
+  font: var(--font-action-small);
 }
 
-button,
-input,
-textarea {
-  font: inherit;
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-surface typo-body text-primary antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
