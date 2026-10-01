@@ -1,6 +1,8 @@
 import { cleanup, configure } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 
+import { FakeBroadcastChannel } from './fake-broadcast-channel'
+
 import '@testing-library/jest-dom/vitest'
 import './zustand-mock'
 
@@ -37,6 +39,12 @@ Object.defineProperty(window, 'ResizeObserver', { writable: true, value: ResizeO
 // jsdom не умеет прокрутку: заглушка, которую тесты могут подсмотреть через spy.
 Element.prototype.scrollTo = noop
 
+// Связь вкладок — в памяти теста (см. fake-broadcast-channel.ts).
+Object.defineProperty(globalThis, 'BroadcastChannel', {
+  writable: true,
+  value: FakeBroadcastChannel,
+})
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' })
 })
@@ -46,6 +54,7 @@ afterEach(() => {
   server.resetHandlers()
   server.events.removeAllListeners()
   resetScenarios()
+  FakeBroadcastChannel.reset()
   sessionStorage.clear()
   localStorage.clear()
 })

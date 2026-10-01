@@ -45,7 +45,10 @@ function loadHistory(idInstance: string) {
 
 let stopPersistence: (() => void) | null = null
 
-/** Запускается из app (идемпотентно). Вход — загрузить историю инстанса, выход — удалить её. */
+/**
+ * Запускается из app (идемпотентно) и только в активной вкладке — пишет историю одна вкладка.
+ * Вход — загрузить историю инстанса, выход — удалить её.
+ */
 export function startHistoryPersistence() {
   if (stopPersistence) return stopPersistence
 
@@ -61,8 +64,10 @@ export function startHistoryPersistence() {
   }
   window.addEventListener('pagehide', handlePageHide)
 
+  // Запуск при живой сессии — вкладка снова стала активной: другая могла записать историю новее,
+  // поэтому сначала читаем её, а не перезаписываем своим устаревшим состоянием.
   const credentials = getSessionCredentials()
-  if (credentials && getAllChats().length === 0) loadHistory(credentials.idInstance)
+  if (credentials) loadHistory(credentials.idInstance)
 
   stopPersistence = () => {
     unsubscribeSession()
