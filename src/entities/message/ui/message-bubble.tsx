@@ -70,10 +70,10 @@ export function MessageBubble({ message, isLastInGroup, footer, aside }: Message
   const metaLabel = statusLabel === null ? time : `${time}, ${statusLabel}`
   const isFailed = metaKind === 'failed'
 
-  const rowCn = cn('flex items-end gap-2', ROW_CN[direction])
+  const rowCn = cn('flex', ROW_CN[direction])
   const columnCn = cn('flex max-w-[85%] min-w-0 flex-col md:max-w-120', COLUMN_CN[direction])
   const bubbleCn = cn(
-    'min-w-18 flow-root rounded-l px-3 pt-2 pb-1.5',
+    'min-w-18 max-w-full flow-root rounded-l px-3 pt-2 pb-1.5',
     BUBBLE_CN[direction],
     isLastInGroup && TAIL_CN[direction],
     isFailed && 'opacity-85',
@@ -85,16 +85,18 @@ export function MessageBubble({ message, isLastInGroup, footer, aside }: Message
 
   return (
     <div className={rowCn}>
-      {aside}
       <div className={columnCn}>
-        <div className={bubbleCn}>
-          <span className="typo-body whitespace-pre-wrap [overflow-wrap:anywhere]">
-            {message.text}
-          </span>
-          <span className={metaCn} aria-label={metaLabel}>
-            <span aria-hidden>{time}</span>
-            {STATUS_ICON[metaKind]}
-          </span>
+        <div className="flex max-w-full items-end gap-2">
+          {aside}
+          <div className={bubbleCn}>
+            <span className="typo-body whitespace-pre-wrap [overflow-wrap:anywhere]">
+              {message.text}
+            </span>
+            <span className={metaCn} aria-label={metaLabel}>
+              <span aria-hidden>{time}</span>
+              {STATUS_ICON[metaKind]}
+            </span>
+          </div>
         </div>
         {footer}
       </div>

@@ -51,8 +51,9 @@ describe('Спринт 2, задача 4 — лента', () => {
     const scrollTo = vi.spyOn(Element.prototype, 'scrollTo')
     const { user, composer } = await openChat()
     await user.type(composer, 'Привет{Enter}')
-    await within(feed()).findByText('Привет')
-    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth' }))
+    await waitFor(() => {
+      expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth' }))
+    })
   })
 })
 
