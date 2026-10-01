@@ -10,7 +10,7 @@ export const AUTHORIZED_ID = '1100000001'
 export const FAKE_TOKEN = 'token'
 
 export const feed = (page: Page) => page.getByRole('log', { name: 'Сообщения' })
-export const chatList = (page: Page) => page.getByRole('navigation', { name: 'Список чатов' })
+export const chatList = (page: Page) => page.getByRole('navigation', { name: 'Чаты' })
 
 export async function fillSignIn(page: Page, idInstance: string, token = FAKE_TOKEN) {
   await page.getByLabel('idInstance').fill(idInstance)

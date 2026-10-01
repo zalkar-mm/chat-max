@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 
@@ -110,7 +110,7 @@ describe('Спринт 2, задача 2 — поиск номера и созд
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     expect(screen.getByRole('heading', { name: '+7 999 123-45-67' })).toBeInTheDocument()
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     expect(within(list).getAllByRole('button')[0]).toHaveTextContent('+7 999 123-45-67')
   })
 
@@ -119,7 +119,7 @@ describe('Спринт 2, задача 2 — поиск номера и созд
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     await createChatViaForm(user, '8 (999) 123-45-67')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     expect(within(list).getAllByRole('button')).toHaveLength(1)
     expect(bodies).toHaveLength(1)
   })
@@ -144,5 +144,33 @@ describe('Спринт 2, задача 2 — поиск номера и созд
     await user.type(phone, '79991234567')
     await user.tab()
     expect(bodies).toEqual([])
+  })
+
+  it('«Назад» браузера закрывает форму; из созданного чата «Назад» ведёт к списку', async () => {
+    const { user, router } = await openForm()
+    await act(() => router.navigate(-1))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+
+    await createChatViaForm(user, '79991234567')
+    await act(() => router.navigate(-1))
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/')
+    })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('закрытие формы кнопкой снимает её запись из истории', async () => {
+    const { user, router } = await openForm()
+    const entries = router.state.historyAction
+    await user.keyboard('{Escape}')
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(router.state.historyAction).toBe('POP')
+    })
+    expect(entries).toBe('PUSH')
   })
 })

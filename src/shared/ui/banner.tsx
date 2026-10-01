@@ -51,14 +51,14 @@ const ICON_CLASSES: Record<BannerTone, string> = {
 }
 
 const ACTION_BASE =
-  'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-s px-2.5 typo-action-small text-link transition-colors'
+  'inline-flex h-(--touch-min) shrink-0 items-center gap-1.5 rounded-s px-2.5 typo-action-small text-link transition-colors md:h-8'
 
 function BannerActions({ children }: BannerActionsProps) {
   if (!children) return null
 
   // Отступ слева = иконка 20 + gap 12: на mobile кнопки выровнены по тексту (DS-3 §6).
   return (
-    <div className="order-last flex basis-full flex-wrap items-center gap-2 pl-8 md:order-none md:basis-auto md:pl-0">
+    <div className="order-last -my-1.5 flex basis-full flex-wrap items-center gap-x-2 pl-6 md:order-none md:my-0 md:basis-auto md:pl-0">
       {children}
     </div>
   )
@@ -150,7 +150,7 @@ export function Banner({
   dismissLabel = 'Скрыть',
 }: BannerProps) {
   const rootCn = cn(
-    'flex min-h-10 w-full flex-wrap items-center gap-x-3 gap-y-1 border-b border-divider-soft px-4 py-2 typo-detail',
+    'flex min-h-10 w-full animate-fade-in flex-wrap items-center gap-x-3 gap-y-1 border-b border-divider-soft px-4 py-2 typo-detail narrow:px-3',
     TONE_CLASSES[tone],
   )
   const iconCn = cn('flex shrink-0', ICON_CLASSES[tone])

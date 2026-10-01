@@ -11,9 +11,10 @@ export type IconButtonProps = ComponentProps<'button'> & {
   variant?: IconButtonVariant
 }
 
+// На mobile область нажатия не меньше --touch-min 44×44 (DS §1 «Касания»).
 const SIZE_CLASSES: Record<IconButtonSize, string> = {
-  md: 'size-10 [&_svg]:size-5',
-  sm: 'size-8 [&_svg]:size-4',
+  md: 'size-(--touch-min) md:size-10 [&_svg]:size-5',
+  sm: 'size-(--touch-min) md:size-8 [&_svg]:size-4',
 }
 
 const VARIANT_CLASSES: Record<IconButtonVariant, string> = {

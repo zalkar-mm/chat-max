@@ -10,7 +10,7 @@ import { renderApp } from '@/test/render-app'
 const STORAGE_KEY = 'max-chat:session'
 
 const signIn = async (idInstance: string, token = 'token') => {
-  const view = renderApp({ path: '/sign-in' })
+  const view = await renderApp({ path: '/sign-in' })
   await view.user.type(screen.getByLabelText('idInstance'), idInstance)
   await view.user.type(screen.getByLabelText('apiTokenInstance'), token)
   await view.user.click(screen.getByRole('button', { name: 'Войти' }))

@@ -21,7 +21,10 @@ import {
   type CreateChatFailure,
   toCreateChatFailure,
 } from './create-chat-errors'
-import { closeNewChatDialogWithoutFocusReturn } from './new-chat-dialog.store'
+import {
+  closeNewChatDialogWithoutFocusReturn,
+  takeDialogHistoryEntry,
+} from './new-chat-dialog.store'
 
 /** Инстанс «не готов» по ответу checkAccount — актуализируем его статус для остального UI. */
 function refreshInstanceState(credentials: Credentials) {
@@ -43,8 +46,10 @@ export function useCreateChatForm() {
   })
 
   const openChat = (chatId: string) => {
+    // Запись формы в истории заменяем чатом: «Назад» из чата — к списку, а не в закрытую форму.
+    const replace = takeDialogHistoryEntry()
     closeNewChatDialogWithoutFocusReturn()
-    void navigate(ROUTES.CHAT(chatId))
+    void navigate(ROUTES.CHAT(chatId), { replace })
   }
 
   const lookup = useMutation({

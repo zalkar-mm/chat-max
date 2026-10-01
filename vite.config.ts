@@ -2,10 +2,25 @@ import { fileURLToPath, URL } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 
+import { SECURITY_HEADERS, toHeadersFile } from './config/security-headers.ts'
+
+/** Заголовки безопасности в `dist/_headers` для хостинга статики. */
+const securityHeadersFile = (): Plugin => ({
+  name: 'security-headers-file',
+  apply: 'build',
+  generateBundle() {
+    this.emitFile({ type: 'asset', fileName: '_headers', source: toHeadersFile(SECURITY_HEADERS) })
+  },
+})
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), securityHeadersFile()],
+  // Локальный просмотр сборки — с теми же заголовками, что на хостинге.
+  preview: { headers: SECURITY_HEADERS },
+  build: { sourcemap: false },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

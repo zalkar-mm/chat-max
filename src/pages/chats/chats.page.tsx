@@ -9,6 +9,7 @@ import { StatusBanners } from '@/widgets/status-banners/status-banners'
 import { NewChatDialog } from '@/features/create-chat/new-chat-dialog'
 
 import { cn } from '@/shared/lib/cn'
+import { SkipLink } from '@/shared/ui/skip-link'
 
 type ChatPanelProps = {
   chatId: string | null
@@ -33,8 +34,12 @@ export function ChatsPage() {
   )
   const mainCn = cn('min-h-0 min-w-0 md:block', isChatOpen ? 'block' : 'hidden')
 
+  // Пропуск навигации (DS §2): к ленте открытого чата, иначе — к списку.
+  const skipTarget = isChatOpen ? 'messages' : 'chat-list'
+
   return (
-    <div className="flex h-dvh flex-col bg-surface">
+    <div className="flex h-dvh flex-col bg-surface pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]">
+      <SkipLink targetId={skipTarget}>Перейти к сообщениям</SkipLink>
       <UnreadTitle />
       <StatusBanners />
       <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[var(--sidebar-w-narrow)_minmax(0,1fr)] xl:grid-cols-[var(--sidebar-w)_minmax(0,1fr)]">

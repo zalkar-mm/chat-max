@@ -4,20 +4,13 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Отправка и получение текстовых сообщений в MAX через GREEN-API"
+    />
+    <meta name="referrer" content="no-referrer" />
     <title>MAX-чат</title>
-    <script>
-      // Тема выставляется до первого рендера, иначе при тёмной теме мелькает светлая.
-      // Ключ и значения совпадают с src/shared/lib/theme/theme.ts.
-      ;(function () {
-        var theme = 'light'
-        try {
-          var saved = localStorage.getItem('max-chat:theme')
-          if (saved === 'light' || saved === 'dark') theme = saved
-          else if (matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark'
-        } catch (_) {}
-        document.documentElement.dataset.theme = theme
-      })()
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

@@ -10,6 +10,10 @@ import type { Message } from '../model/message.types'
 type MessageBubbleProps = {
   message: Message
   isLastInGroup: boolean
+  /** Как скринридеру назвать автора входящего: имя собеседника или номер. */
+  senderLabel: string
+  /** Сообщение пришло, пока лента открыта, — появляется с анимацией (DS §5). */
+  isNew?: boolean
   footer?: ReactNode
   aside?: ReactNode
 }
@@ -69,6 +73,21 @@ const toMetaKind = (message: Message): MetaKind =>
 
 const UNSUPPORTED_TEXT = 'Сообщение этого типа не поддерживается'
 
+const toPlainText = (message: Message) =>
+  message.content === 'unsupported' ? UNSUPPORTED_TEXT : message.text
+
+/** DS §3: «Вы, 14:05, доставлено: текст» / «Анна, 14:06: текст». */
+function toAriaLabel(
+  message: Message,
+  senderLabel: string,
+  time: string,
+  statusLabel: string | null,
+) {
+  const author = message.direction === 'outgoing' ? 'Вы' : senderLabel
+  const meta = [author, time, statusLabel].filter((part) => part !== null).join(', ')
+  return `${meta}: ${toPlainText(message)}`
+}
+
 function MessageText({ message }: { message: Message }) {
   if (message.content === 'unsupported') {
     return (
@@ -83,7 +102,14 @@ function MessageText({ message }: { message: Message }) {
   )
 }
 
-export function MessageBubble({ message, isLastInGroup, footer, aside }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  isLastInGroup,
+  senderLabel,
+  isNew = false,
+  footer,
+  aside,
+}: MessageBubbleProps) {
   const { direction } = message
   const metaKind = toMetaKind(message)
   const time = formatMessageTime(message.createdAt)
@@ -92,7 +118,9 @@ export function MessageBubble({ message, isLastInGroup, footer, aside }: Message
   const statusSuffix = statusLabel === null ? '' : `, ${statusLabel}`
   const isFailed = metaKind === 'failed'
 
-  const rowCn = cn('flex', ROW_CN[direction])
+  const ariaLabel = toAriaLabel(message, senderLabel, time, statusLabel)
+
+  const rowCn = cn('flex', ROW_CN[direction], isNew && 'animate-appear')
   const columnCn = cn('flex max-w-[85%] min-w-0 flex-col md:max-w-120', COLUMN_CN[direction])
   const bubbleCn = cn(
     'min-w-18 max-w-full flow-root rounded-l px-3 pt-2 pb-1.5',
@@ -106,7 +134,7 @@ export function MessageBubble({ message, isLastInGroup, footer, aside }: Message
   )
 
   return (
-    <div className={rowCn}>
+    <article className={rowCn} aria-label={ariaLabel}>
       <div className={columnCn}>
         <div className="flex max-w-full items-end gap-2">
           {aside}
@@ -121,6 +149,6 @@ export function MessageBubble({ message, isLastInGroup, footer, aside }: Message
         </div>
         {footer}
       </div>
-    </div>
+    </article>
   )
 }

@@ -16,7 +16,64 @@
   /* Абсолютный белый — по спеке: иконка логотипа, текст и иконки на акценте в обеих темах. */
   --color-white: #fff;
   --animate-spinner: spin 800ms linear infinite;
+  /* Появления по DS §5 (motion): только opacity/transform; при reduced-motion токены длительности = 0. */
+  --animate-appear: appear var(--dur-base) var(--ease-out) both;
+  --animate-appear-fast: appear var(--dur-fast) var(--ease-out) both;
+  --animate-pop: pop var(--dur-fast) var(--ease-out) both;
+  --animate-slide-in: slide-in var(--dur-base) var(--ease-out) both;
+  --animate-sheet-in: sheet-in var(--dur-base) var(--ease-out) both;
+  --animate-modal-in: modal-in var(--dur-base) var(--ease-out) both;
+  --animate-fade-in: fade-in var(--dur-fast) var(--ease-out) both;
+  /* Индикатор загрузки появляется, только если действие дольше 300 мс (DS §5). */
+  --animate-spinner-delayed: spin 800ms linear infinite, fade-in 1ms linear 300ms both;
+  --animate-shine: shine 1.4s linear infinite;
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  @keyframes pop {
+    from {
+      transform: scale(0.6);
+    }
+  }
+  @keyframes slide-in {
+    from {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      scale: 0.96;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes shine {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
 }
+
+/* Телефон в альбомной ориентации (DS §1): шапки и ячейки ниже, поле ввода короче. */
+@custom-variant phone-landscape (@media (max-height: 480px) and (orientation: landscape));
+/* Узкие экраны 320–360: горизонтальные отступы 16 → 12. */
+@custom-variant narrow (@media (max-width: 360px));
 
 @theme inline {
   --font-sans: var(--font);
@@ -131,6 +188,28 @@
   font: var(--font-body-strong);
   letter-spacing: var(--ls-body);
 }
+/* Поля ввода: на mobile 16px, иначе iOS Safari увеличивает страницу при фокусе. */
+@utility typo-input {
+  font: var(--font-body-mobile-input);
+  letter-spacing: var(--ls-body);
+  @variant md {
+    font: var(--font-body);
+  }
+}
+/* Единое фокус-кольцо DS §2: двойное, видно на любом фоне. outline прозрачный — для режима высокой контрастности. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid transparent;
+    box-shadow: var(--focus-ring);
+  }
+}
+/* Внутреннее кольцо — для элементов, которые обрезает прокручиваемый контейнер (ячейки списка). */
+@utility focus-ring-inset {
+  &:focus-visible {
+    outline: 2px solid transparent;
+    box-shadow: var(--focus-ring-inset);
+  }
+}
 @utility typo-detail {
   font: var(--font-detail);
 }
@@ -153,6 +232,7 @@
 }
 
 @layer base {
+  /* Скроллятся только списки, не body: высота экрана без «прыжков» адресной строки Safari (DS §1). */
   html,
   body,
   #root {
@@ -160,19 +240,24 @@
   }
 
   body {
-    @apply bg-surface typo-body text-primary antialiased;
+    @apply overflow-hidden bg-surface typo-body text-primary antialiased;
   }
 
+  /* Единый фокус DS §2 по умолчанию для всего интерактивного; поля ввода задают своё кольцо. */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-accent;
+    outline: 2px solid transparent;
+    box-shadow: var(--focus-ring);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-    }
+  /* Без задержки и зума по двойному тапу. */
+  a,
+  button,
+  input,
+  label,
+  textarea,
+  [role='button'] {
+    touch-action: manipulation;
   }
+
+  /* Сброс анимаций при reduced-motion — в tokens.css (Sprint 4). */
 }

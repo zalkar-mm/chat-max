@@ -29,13 +29,13 @@ const incoming = (text: string): Message => ({
 
 describe('MessageBubble', () => {
   it('показывает HTML буквально, не как разметку', () => {
-    render(<MessageBubble message={incoming('<b>привет</b>')} isLastInGroup />)
+    render(<MessageBubble senderLabel="Анна" message={incoming('<b>привет</b>')} isLastInGroup />)
     expect(screen.getByText('<b>привет</b>')).toBeInTheDocument()
     expect(screen.queryByText('привет', { selector: 'b' })).not.toBeInTheDocument()
   })
 
   it('сохраняет переносы строк', () => {
-    render(<MessageBubble message={incoming('первая\nвторая')} isLastInGroup />)
+    render(<MessageBubble senderLabel="Анна" message={incoming('первая\nвторая')} isLastInGroup />)
     const text = screen.getByText(/первая/)
     expect(text.textContent).toContain('\n')
     expect(text.textContent).toBe('первая\nвторая')
@@ -47,7 +47,7 @@ describe('MessageBubble', () => {
     [outgoing({ status: 'failed', failure: 'offline' }), '14:05, не отправлено'],
     [incoming('привет'), '14:05'],
   ])('подписывает мету времени и статуса: %#', (message, label) => {
-    render(<MessageBubble message={message} isLastInGroup={false} />)
+    render(<MessageBubble senderLabel="Анна" message={message} isLastInGroup={false} />)
     const time = screen.getByText('14:05')
     expect(time.parentElement?.textContent).toBe(label)
   })
@@ -55,6 +55,7 @@ describe('MessageBubble', () => {
   it('рендерит footer и aside', () => {
     render(
       <MessageBubble
+        senderLabel="Анна"
         message={outgoing({ status: 'failed', failure: 'offline' })}
         isLastInGroup
         aside={<span>иконка ошибки</span>}
@@ -63,5 +64,13 @@ describe('MessageBubble', () => {
     )
     expect(screen.getByText('иконка ошибки')).toBeInTheDocument()
     expect(screen.getByText('Нет подключения')).toBeInTheDocument()
+  })
+
+  it.each([
+    [incoming('привет'), 'Анна, 14:05: привет'],
+    [outgoing({ status: 'delivered', idMessage: 'W1' }), 'Вы, 14:05, доставлено: '],
+  ])('озвучивает автора, время и статус (DS §3): %#', (message, prefix) => {
+    render(<MessageBubble senderLabel="Анна" message={message} isLastInGroup />)
+    expect(screen.getByRole('article')).toHaveAccessibleName(new RegExp(`^${prefix}`))
   })
 })

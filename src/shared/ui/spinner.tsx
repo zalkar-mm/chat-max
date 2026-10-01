@@ -5,6 +5,8 @@ type SpinnerSize = 20 | 24 | 32
 type SpinnerProps = {
   size?: SpinnerSize
   className?: string
+  /** Показ с задержкой 300 мс (DS §5): быстрые действия не мигают индикатором. */
+  isDelayed?: boolean
 }
 
 const STROKE_WIDTH = 2.5
@@ -16,14 +18,19 @@ const SIZE_CLASSES: Record<SpinnerSize, string> = {
   32: 'size-8',
 }
 
-export function Spinner({ size = 20, className }: SpinnerProps) {
+export function Spinner({ size = 20, className, isDelayed = true }: SpinnerProps) {
   const center = size / 2
   const radius = (size - STROKE_WIDTH) / 2
   const circumference = 2 * Math.PI * radius
   const segment = circumference * SEGMENT_SHARE
   const dashArray = `${segment} ${circumference - segment}`
   const viewBox = `0 0 ${size} ${size}`
-  const rootCn = cn('shrink-0 animate-spinner', SIZE_CLASSES[size], className)
+  const rootCn = cn(
+    'shrink-0',
+    isDelayed ? 'animate-spinner-delayed' : 'animate-spinner',
+    SIZE_CLASSES[size],
+    className,
+  )
 
   return (
     <svg className={rootCn} viewBox={viewBox} fill="none" aria-hidden data-testid="spinner">

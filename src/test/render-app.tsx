@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect } from 'vitest'
 
@@ -13,13 +13,21 @@ import { initSignInFlow } from '@/features/sign-in/model/sign-in-flow.store'
 import { formatPhone, normalizePhone } from '@/entities/chat/lib/phone'
 import { useSessionStore } from '@/entities/session/model/session.store'
 
+// Ленивые страницы роутера загружаются заранее, чтобы renderApp не зависел от времени импорта.
+await Promise.all([import('@/pages/sign-in/sign-in.page'), import('@/pages/chats/chats.page')])
+
+const MAX_INIT_TICKS = 100
+
 type RenderAppOptions = {
   path?: string
   advanceTimers?: (ms: number) => unknown
 }
 
-/** Приложение целиком на memory-роутере: сторы сброшены, сессия решается по текущему хранилищу. */
-export function renderApp({ path = '/', advanceTimers }: RenderAppOptions = {}) {
+/**
+ * Приложение целиком на memory-роутере: сторы сброшены, сессия решается по текущему хранилищу.
+ * Страницы — ленивые чанки: ждём, пока роутер их загрузит, чтобы тест начинал с отрисованного экрана.
+ */
+export async function renderApp({ path = '/', advanceTimers }: RenderAppOptions = {}) {
   useSessionStore.setState({
     credentials: null,
     instanceState: null,
@@ -36,6 +44,13 @@ export function renderApp({ path = '/', advanceTimers }: RenderAppOptions = {}) 
       </QueryProvider>
     </StrictMode>,
   )
+  // Модули страниц уже в кэше: роутер грузит их за несколько микрозадач. Таймеры не нужны —
+  // работает и с фейковыми таймерами.
+  await act(async () => {
+    for (let tick = 0; tick < MAX_INIT_TICKS && !router.state.initialized; tick += 1) {
+      await Promise.resolve()
+    }
+  })
   return { ...view, user, router }
 }
 
@@ -54,7 +69,7 @@ export async function renderSignedInApp({
       apiUrl: 'https://3100.api.green-api.com',
     }),
   )
-  const view = renderApp(options)
+  const view = await renderApp(options)
   await screen.findByRole('heading', { name: 'Чаты' })
   return view
 }

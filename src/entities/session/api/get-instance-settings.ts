@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/mini'
 
 import { buildMethodUrl } from '@/shared/api/build-method-url'
 import type { Credentials } from '@/shared/api/credentials'
@@ -6,8 +6,8 @@ import { greenApiClient } from '@/shared/api/green-api-client'
 import { parseResponse } from '@/shared/api/parse-response'
 
 const settingsResponseSchema = z.object({
-  webhookUrl: z.string().nullish(),
-  incomingWebhook: z.string().nullish(),
+  webhookUrl: z.nullish(z.string()),
+  incomingWebhook: z.nullish(z.string()),
 })
 
 export type InstanceSettings = {

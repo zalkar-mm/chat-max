@@ -18,7 +18,7 @@ const storeSession = (idInstance = '3100000001', storage: Storage = sessionStora
 
 const openMainScreen = async (idInstance?: string) => {
   storeSession(idInstance)
-  const view = renderApp()
+  const view = await renderApp()
   await screen.findByRole('heading', { name: 'Чаты' })
   return view
 }
@@ -26,7 +26,7 @@ const openMainScreen = async (idInstance?: string) => {
 describe('Задача 4 — выход', () => {
   it('1–2: «Выйти» → вход с пустыми полями, сессии нет ни в одном хранилище', async () => {
     storeSession('3100000001', localStorage)
-    const { user } = renderApp()
+    const { user } = await renderApp()
     await screen.findByRole('heading', { name: 'Чаты' })
 
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
@@ -90,7 +90,7 @@ describe('Задача 6 — баннеры', () => {
     expect(screen.queryByText(warning)).not.toBeInTheDocument()
 
     unmount()
-    renderApp()
+    await renderApp()
     expect(await screen.findByText(warning)).toBeInTheDocument()
   })
 

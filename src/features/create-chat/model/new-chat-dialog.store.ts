@@ -2,9 +2,14 @@ import { create } from 'zustand'
 
 type NewChatDialogState = {
   isOpen: boolean
+  /** Наша запись наверху истории браузера, которую при закрытии из интерфейса нужно снять. */
+  hasHistoryEntry: boolean
 }
 
-export const useNewChatDialogStore = create<NewChatDialogState>()(() => ({ isOpen: false }))
+export const useNewChatDialogStore = create<NewChatDialogState>()(() => ({
+  isOpen: false,
+  hasHistoryEntry: false,
+}))
 
 // Кнопка-инициатор: после закрытия фокус возвращается на неё (кнопок открытия две).
 let returnFocusTarget: HTMLElement | null = null
@@ -29,3 +34,23 @@ export const takeReturnFocusTarget = () => {
   returnFocusTarget = null
   return target
 }
+
+/* «Назад» браузера закрывает форму (DS §1): при открытии в историю кладётся запись с этим состоянием. */
+const DIALOG_ENTRY_KEY = 'newChatDialog'
+export const DIALOG_ENTRY_STATE = { [DIALOG_ENTRY_KEY]: true } as const
+
+export const isDialogEntry = (state: unknown) =>
+  typeof state === 'object' && state !== null && DIALOG_ENTRY_KEY in state
+
+export const markDialogHistoryEntry = () => {
+  useNewChatDialogStore.setState({ hasHistoryEntry: true })
+}
+
+/** Забрать запись: true — она есть и теперь наша забота (снять «Назад» или заменить переходом). */
+export const takeDialogHistoryEntry = () => {
+  const had = useNewChatDialogStore.getState().hasHistoryEntry
+  useNewChatDialogStore.setState({ hasHistoryEntry: false })
+  return had
+}
+
+export const hasDialogHistoryEntry = () => useNewChatDialogStore.getState().hasHistoryEntry

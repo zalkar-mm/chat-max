@@ -1,13 +1,13 @@
-import { z } from 'zod'
+import { z } from 'zod/mini'
 
 import type { Credentials } from '@/shared/api/credentials'
 
 const STORAGE_KEY = 'max-chat:session'
 
 const storedCredentialsSchema = z.object({
-  idInstance: z.string().min(1),
-  apiTokenInstance: z.string().min(1),
-  apiUrl: z.string().min(1),
+  idInstance: z.string().check(z.minLength(1)),
+  apiTokenInstance: z.string().check(z.minLength(1)),
+  apiUrl: z.string().check(z.minLength(1)),
 })
 
 export type StoredSession = {

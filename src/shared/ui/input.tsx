@@ -8,7 +8,7 @@ export type InputProps = ComponentProps<'input'> & {
 
 export function Input({ invalid = false, className, ...props }: InputProps) {
   const rootCn = cn(
-    'h-12 w-full min-w-0 rounded-m border-none bg-input px-4 typo-body text-primary outline-none placeholder:text-tertiary',
+    'h-12 w-full min-w-0 rounded-m border-none bg-input px-4 typo-input text-primary outline-none placeholder:text-tertiary',
     'focus:ring-2 focus:ring-accent focus-visible:outline-none',
     'disabled:cursor-not-allowed disabled:opacity-60',
     invalid && 'ring-2 ring-negative focus:ring-negative',

@@ -18,7 +18,7 @@ const openChat = async (phone = '79991234567') => {
 // Подпись статуса для скринридера; «, отправлено» целиком — не путать с «, не отправлено».
 const SENT = ', отправлено'
 
-const feed = () => screen.getByRole('log', { name: 'Сообщения' })
+const feed = () => screen.getByRole('log', { name: /^Сообщения с / })
 
 const sendRequests = () => {
   const bodies: unknown[] = []
@@ -120,7 +120,7 @@ describe('Спринт 2, задача 5 — поле ввода', () => {
     await user.type(composer, 'черновик')
     await createChatViaForm(user, '79997654321')
     expect(screen.getByRole('textbox', { name: 'Сообщение' })).toHaveValue('')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     await user.click(within(list).getByRole('button', { name: /\+7 999 123-45-67/ }))
     expect(screen.getByRole('textbox', { name: 'Сообщение' })).toHaveValue('черновик')
   })
@@ -219,7 +219,7 @@ describe('Спринт 2, задача 3 — список чатов', () => {
     await createChatViaForm(view.user, '79991111111')
     await createChatViaForm(view.user, '79992222222')
     await createChatViaForm(view.user, '79993333333')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     const titles = () =>
       within(list)
         .getAllByRole('button')
@@ -240,7 +240,7 @@ describe('Спринт 2, задача 3 — список чатов', () => {
     const view = await renderSignedInApp()
     await createChatViaForm(view.user, '79991111111')
     await createChatViaForm(view.user, '79992222222')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     within(list)
       .getByRole('button', { name: /\+7 999 111-11-11/ })
       .focus()
@@ -253,13 +253,13 @@ describe('Спринт 2, задача 3 — список чатов', () => {
     await createChatViaForm(view.user, '79991111111')
     await view.user.click(screen.getByRole('button', { name: 'Назад к списку' }))
     expect(view.router.state.location.pathname).toBe('/')
-    expect(screen.getByRole('navigation', { name: 'Список чатов' })).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Чаты' })).toBeInTheDocument()
   })
 
   it('4: активный чат подсвечен', async () => {
     const view = await renderSignedInApp()
     await createChatViaForm(view.user, '79991111111')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     expect(within(list).getByRole('button', { name: /\+7 999 111-11-11/ })).toHaveAttribute(
       'aria-current',
       'true',

@@ -27,7 +27,10 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
   }
 
   return (
-    <section className="flex h-full min-h-0 flex-col bg-chat" aria-label={chat.title}>
+    <section
+      className="flex h-full min-h-0 flex-col bg-chat max-md:animate-slide-in"
+      aria-label={chat.title}
+    >
       <ChatHeader
         chatId={chat.id}
         title={chat.title}
@@ -35,7 +38,7 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
         phone={chat.phone}
         onBack={handleBack}
       />
-      <MessageFeed chatId={chat.id} />
+      <MessageFeed chatId={chat.id} title={chat.title} />
       <MessageComposer chatId={chat.id} />
     </section>
   )

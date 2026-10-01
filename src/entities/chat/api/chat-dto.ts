@@ -1,7 +1,7 @@
-import { z } from 'zod'
+import { z } from 'zod/mini'
 
 export const checkAccountResponseSchema = z.object({
   exist: z.boolean(),
   chatId: z.string(),
-  fromCache: z.boolean().optional(),
+  fromCache: z.optional(z.boolean()),
 })

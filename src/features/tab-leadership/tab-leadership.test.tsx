@@ -79,7 +79,7 @@ describe('Спринт 4, задача 3 — работа в двух вклад
     await waitFor(() => {
       expect(other.received).toContainEqual({ type: 'claim', idInstance: ID })
     })
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     expect(await within(list).findByText('Пока вас не было')).toBeInTheDocument()
     await waitFor(() => {
       expect(pendingNotifications(ID)).toBe(0)
@@ -109,7 +109,7 @@ describe('Спринт 4, задача 3 — работа в двух вклад
 
     await user.click(screen.getByRole('button', { name: 'Использовать здесь' }))
 
-    const list = await screen.findByRole('navigation', { name: 'Список чатов' })
+    const list = await screen.findByRole('navigation', { name: 'Чаты' })
     expect(within(list).getByText('Анна')).toBeInTheDocument()
   })
 

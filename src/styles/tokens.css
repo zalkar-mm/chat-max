@@ -11,6 +11,7 @@
   --font-title: 600 17px/24px var(--font);
   --font-body: 400 15px/20px var(--font); /* messages, inputs, cell titles */
   --font-body-strong: 500 15px/20px var(--font);
+  --font-body-mobile-input: 400 16px/20px var(--font); /* поля на <900: iOS не зумит при фокусе */
   --font-detail: 400 14px/16px var(--font); /* cell subtitle (last message) */
   --font-description: 400 12px/14px var(--font); /* time in chat list, hints */
   --font-label: 400 12px/16px var(--font);

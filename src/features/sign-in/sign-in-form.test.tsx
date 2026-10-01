@@ -19,13 +19,13 @@ const countStateRequests = () => {
 
 describe('Задача 1 — форма входа', () => {
   it('1: пустая форма — «Войти» неактивна', async () => {
-    renderApp({ path: '/sign-in' })
+    await renderApp({ path: '/sign-in' })
     expect(await screen.findByRole('heading', { name: 'Вход' })).toBeInTheDocument()
     expect(submitButton()).toBeDisabled()
   })
 
   it('2: пробелы по краям idInstance обрезаются при уходе из поля', async () => {
-    const { user } = renderApp({ path: '/sign-in' })
+    const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), ' 3100000000 ')
     await user.tab()
     expect(idInstanceField()).toHaveValue('3100000000')
@@ -33,7 +33,7 @@ describe('Задача 1 — форма входа', () => {
   })
 
   it('3: не-цифры в idInstance — ошибка после ухода из поля', async () => {
-    const { user } = renderApp({ path: '/sign-in' })
+    const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), '31a0')
     await user.tab()
     expect(await screen.findByText('idInstance состоит только из цифр')).toBeInTheDocument()
@@ -42,7 +42,7 @@ describe('Задача 1 — форма входа', () => {
   })
 
   it('4: токен скрыт, «глаз» показывает и скрывает его', async () => {
-    const { user } = renderApp({ path: '/sign-in' })
+    const { user } = await renderApp({ path: '/sign-in' })
     expect(tokenField()).toHaveAttribute('type', 'password')
     await user.click(screen.getByRole('button', { name: 'Показать токен' }))
     expect(tokenField()).toHaveAttribute('type', 'text')
@@ -52,7 +52,7 @@ describe('Задача 1 — форма входа', () => {
 
   it('5: пробел внутри токена — ошибка, запрос не уходит', async () => {
     const requests = countStateRequests()
-    const { user } = renderApp({ path: '/sign-in' })
+    const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), '3100000001')
     await user.type(tokenField(), 'abc def')
     await user.click(submitButton())
@@ -61,7 +61,7 @@ describe('Задача 1 — форма входа', () => {
   })
 
   it('6: Enter в поле токена запускает вход', async () => {
-    const { user } = renderApp({ path: '/sign-in' })
+    const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), '3100000001')
     await user.type(tokenField(), 'token{Enter}')
     expect(await screen.findByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
@@ -75,7 +75,7 @@ describe('Задача 1 — форма входа', () => {
       }),
     )
     const requests = countStateRequests()
-    const { user } = renderApp({ path: '/sign-in' })
+    const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), '3100000001')
     await user.type(tokenField(), 'token')
     await user.click(submitButton())
@@ -86,7 +86,7 @@ describe('Задача 1 — форма входа', () => {
   })
 
   it('ошибка сервера показывается над кнопкой и исчезает при правке поля', async () => {
-    const { user } = renderApp({ path: '/sign-in' })
+    const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), '3100000001')
     await user.type(tokenField(), 'wrong')
     await user.click(submitButton())
@@ -103,7 +103,7 @@ describe('Задача 1 — форма входа', () => {
   })
 
   it('неверный API URL раскрывает «Дополнительно» с ошибкой', async () => {
-    const { user } = renderApp({ path: '/sign-in' })
+    const { user } = await renderApp({ path: '/sign-in' })
     await user.click(screen.getByRole('button', { name: 'Дополнительно' }))
     await user.clear(screen.getByLabelText('API URL'))
     await user.type(screen.getByLabelText('API URL'), 'http://example.com')

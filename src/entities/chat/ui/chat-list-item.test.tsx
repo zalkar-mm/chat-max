@@ -55,9 +55,11 @@ describe('ChatListItem', () => {
     expect(screen.queryByText('не отправлено')).not.toBeInTheDocument()
   })
 
-  it('показывает статус последнего сообщения текстом для скринридера', () => {
+  it('доступное имя по DS: название, превью, время, статус', () => {
     renderItem({ status: 'failed' })
-    expect(screen.getByText('не отправлено')).toBeInTheDocument()
+    expect(screen.getByRole('button')).toHaveAccessibleName(
+      '+7 999 123-45-67, Вы: Привет, 14:05, не отправлено',
+    )
   })
 
   it('помечает активный чат через aria-current', () => {
@@ -67,6 +69,8 @@ describe('ChatListItem', () => {
 
   it('с непрочитанными добавляет их число в доступное имя', () => {
     renderItem({ unreadCount: 12 })
-    expect(screen.getByRole('button')).toHaveAccessibleName('+7 999 123-45-67, 12 непрочитанных')
+    expect(screen.getByRole('button')).toHaveAccessibleName(
+      '+7 999 123-45-67, Вы: Привет, 14:05, 12 непрочитанных',
+    )
   })
 })

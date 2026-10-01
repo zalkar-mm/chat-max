@@ -1,22 +1,25 @@
-import { z } from 'zod'
+import { z } from 'zod/mini'
 
 import { DEFAULT_API_URL } from '@/shared/config/env'
 
 export const signInSchema = z.object({
   idInstance: z
     .string()
-    .trim()
-    .min(1, 'Введите idInstance')
-    .regex(/^\d+$/, 'idInstance состоит только из цифр'),
+    .check(
+      z.trim(),
+      z.minLength(1, 'Введите idInstance'),
+      z.regex(/^\d+$/, 'idInstance состоит только из цифр'),
+    ),
   apiTokenInstance: z
     .string()
-    .trim()
-    .min(1, 'Введите apiTokenInstance')
-    .regex(/^\S+$/, 'Токен не должен содержать пробелов'),
+    .check(
+      z.trim(),
+      z.minLength(1, 'Введите apiTokenInstance'),
+      z.regex(/^\S+$/, 'Токен не должен содержать пробелов'),
+    ),
   apiUrl: z
     .string()
-    .trim()
-    .regex(/^https:\/\/\S+$/, 'Укажите адрес в формате https://…'),
+    .check(z.trim(), z.regex(/^https:\/\/\S+$/, 'Укажите адрес в формате https://…')),
   remember: z.boolean(),
 })
 

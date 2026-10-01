@@ -21,7 +21,7 @@ const receive = (idMessage: string, text: string) => {
 }
 
 const scrollFeedUp = () => {
-  const feed = screen.getByRole('log', { name: 'Сообщения' }).parentElement
+  const feed = screen.getByRole('log', { name: /^Сообщения с / }).parentElement
   if (!feed) throw new Error('Нет контейнера прокрутки ленты')
   Object.defineProperty(feed, 'scrollHeight', { configurable: true, value: 2000 })
   Object.defineProperty(feed, 'clientHeight', { configurable: true, value: 500 })
@@ -32,7 +32,7 @@ const scrollFeedUp = () => {
 describe('MessageFeed — кнопка «↓ Новые сообщения»', () => {
   it('пользователь внизу → новое входящее прокручивается в вид, кнопки нет', () => {
     const scrollTo = vi.spyOn(Element.prototype, 'scrollTo')
-    render(<MessageFeed chatId={CHAT_ID} />)
+    render(<MessageFeed chatId={CHAT_ID} title="Анна" />)
     receive('in-1', 'Привет')
     expect(screen.getByText('Привет')).toBeInTheDocument()
     expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth' }))
@@ -40,7 +40,7 @@ describe('MessageFeed — кнопка «↓ Новые сообщения»', (
   })
 
   it('прокрутил вверх → лента не прыгает, кнопка с числом; нажатие → вниз и кнопка скрыта', async () => {
-    render(<MessageFeed chatId={CHAT_ID} />)
+    render(<MessageFeed chatId={CHAT_ID} title="Анна" />)
     scrollFeedUp()
     const scrollTo = vi.spyOn(Element.prototype, 'scrollTo')
 
@@ -60,10 +60,10 @@ describe('MessageFeed — кнопка «↓ Новые сообщения»', (
   })
 
   it('сам доскроллил до низа → кнопка скрывается', () => {
-    render(<MessageFeed chatId={CHAT_ID} />)
+    render(<MessageFeed chatId={CHAT_ID} title="Анна" />)
     scrollFeedUp()
     receive('in-1', 'Первое')
-    const feed = screen.getByRole('log', { name: 'Сообщения' }).parentElement
+    const feed = screen.getByRole('log', { name: /^Сообщения с / }).parentElement
     if (!feed) throw new Error('Нет контейнера прокрутки ленты')
     feed.scrollTop = 1450
     fireEvent.scroll(feed)

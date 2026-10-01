@@ -6,7 +6,7 @@ import { createChatViaForm, renderApp, renderSignedInApp } from '@/test/render-a
 
 const HISTORY_KEY = (idInstance: string) => `max-chat:history:${idInstance}`
 
-const list = () => screen.getByRole('navigation', { name: 'Список чатов' })
+const list = () => screen.getByRole('navigation', { name: 'Чаты' })
 
 async function chatWithHistory() {
   const view = await renderSignedInApp()
@@ -30,7 +30,7 @@ describe('Спринт 3, задача 6 — история после пере�
   it('1: F5 → чаты, сообщения и статусы на месте', async () => {
     const { unmount } = await chatWithHistory()
     unmount()
-    renderApp({ path: '/chat/191234567' })
+    await renderApp({ path: '/chat/191234567' })
     expect(await screen.findByText('Ответ')).toBeInTheDocument()
     expect(screen.getByText('Привет')).toBeInTheDocument()
     expect(screen.getByText(', отправлено')).toBeInTheDocument()
@@ -68,7 +68,7 @@ describe('Спринт 3, задача 6 — история после пере�
       }),
     )
     unmount()
-    renderApp({ path: '/chat/191234567' })
+    await renderApp({ path: '/chat/191234567' })
     expect(await screen.findByText('Не отправлено.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Повторить' })).toBeInTheDocument()
   })
@@ -78,7 +78,7 @@ describe('Спринт 3, задача 6 — история после пере�
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
     expect(sessionStorage.getItem(HISTORY_KEY('3100000001'))).toBeNull()
 
-    await user.type(screen.getByLabelText('idInstance'), '3100000001')
+    await user.type(await screen.findByLabelText('idInstance'), '3100000001')
     await user.type(screen.getByLabelText('apiTokenInstance'), 'token{Enter}')
     expect(await screen.findByText('Здесь появятся ваши чаты')).toBeInTheDocument()
   })
