@@ -32,8 +32,11 @@ async function runCheck({ credentials }: PendingSignIn): Promise<CheckResult> {
   checkController = controller
   try {
     const state = await checkInstanceState(credentials, controller.signal)
+    // Ответ мог прийти раньше, чем отмена: результат отменённой проверки не применяем.
+    if (controller.signal.aborted) return { ok: false, error: null }
     return { ok: true, state }
   } catch (error) {
+    if (controller.signal.aborted) return { ok: false, error: null }
     return { ok: false, error: toSignInError(error) }
   } finally {
     if (checkController === controller) checkController = null

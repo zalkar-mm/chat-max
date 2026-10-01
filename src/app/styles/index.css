@@ -100,6 +100,13 @@
   --radius-logo: 14px;
   --radius-checkbox: var(--r-bubble-stack);
 
+  --background-image-avatar-sky: var(--avatar-sky);
+  --background-image-avatar-violet: var(--avatar-violet);
+  --background-image-avatar-coral: var(--avatar-coral);
+  --background-image-avatar-green: var(--avatar-green);
+  --background-image-avatar-orange: var(--avatar-orange);
+  --background-image-bubble-out-gradient: var(--bubble-out-gradient);
+
   --shadow-scroll-fab: var(--scroll-fab-shadow);
   --shadow-modal: 0 12px 40px rgb(0 0 0 / 0.24);
 }
