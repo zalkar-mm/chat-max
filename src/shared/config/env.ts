@@ -1,5 +1,5 @@
-// Хост MAX-инстансов GREEN-API по умолчанию. Из idInstance не выводится — точное значение в личном кабинете.
-export const DEFAULT_API_URL = 'https://7107.api.greenapi.com'
+//api url дается индивидуально - необходимо в строке ниже её поставить чтоб можно было проверять - DEFAULT_API_URL = 'your_api'
+export const DEFAULT_API_URL = 'https://3100.api.green-api.com'
 
 export const GREEN_API_CONSOLE_URL = 'https://console.green-api.com'
 
