@@ -23,7 +23,8 @@ import {
 } from './create-chat-errors'
 import {
   closeNewChatDialogWithoutFocusReturn,
-  takeDialogHistoryEntry,
+  handOverDialogHistoryEntry,
+  useNewChatDialogStore,
 } from './new-chat-dialog.store'
 
 /** Инстанс «не готов» по ответу checkAccount — актуализируем его статус для остального UI. */
@@ -47,7 +48,7 @@ export function useCreateChatForm() {
 
   const openChat = (chatId: string) => {
     // Запись формы в истории заменяем чатом: «Назад» из чата — к списку, а не в закрытую форму.
-    const replace = takeDialogHistoryEntry()
+    const replace = handOverDialogHistoryEntry()
     closeNewChatDialogWithoutFocusReturn()
     void navigate(ROUTES.CHAT(chatId), { replace })
   }
@@ -60,6 +61,8 @@ export function useCreateChatForm() {
         setFailure('notFound')
         return
       }
+      // Форму закрыли «Назад», пока шла проверка: пользователь передумал — чат не создаём.
+      if (!useNewChatDialogStore.getState().isOpen) return
       // Чат с этим chatId уже мог быть создан по другому написанию номера — addChat вернёт его.
       const chat = addChat({ chatId: result.chatId, phone, now: Date.now() })
       openChat(chat.id)

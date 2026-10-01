@@ -1,3 +1,5 @@
+import { GREEN_API_HOSTS } from '../src/shared/config/green-api-hosts.ts'
+
 /**
  * Заголовки безопасности продакшена (sprint-4, задача 6). Один источник: `vite preview` отдаёт их
  * локально, сборка кладёт их в `dist/_headers` (формат Netlify / Cloudflare Pages).
@@ -10,8 +12,8 @@ const CONTENT_SECURITY_POLICY = [
   // шириной полосы прокрутки — хешем его не описать. Скрипты при этом остаются строго своими.
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
-  // Запросы — только к GREEN-API (у инстансов MAX бывают оба домена: *.green-api.com и *.greenapi.com).
-  "connect-src 'self' https://*.green-api.com https://*.greenapi.com",
+  // Запросы — только к GREEN-API; тот же список проверяет форма входа.
+  `connect-src 'self' ${GREEN_API_HOSTS.map((host) => `https://*.${host}`).join(' ')}`,
   "font-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",

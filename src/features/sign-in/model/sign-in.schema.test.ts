@@ -40,11 +40,20 @@ describe('signInSchema — проверка полей входа', () => {
     [{ apiTokenInstance: 'to ken' }, 'Токен не должен содержать пробелов'],
     [{ apiUrl: 'http://1100.api.green-api.com' }, 'Укажите адрес в формате https://…'],
     [{ apiUrl: '' }, 'Укажите адрес в формате https://…'],
+    [
+      { apiUrl: 'https://api.example.com' },
+      'Адрес должен быть на домене green-api.com или greenapi.com',
+    ],
+    [
+      { apiUrl: 'https://green-api.com.evil.io' },
+      'Адрес должен быть на домене green-api.com или greenapi.com',
+    ],
   ])('%o → «%s»', (input, message) => {
     expect(firstError(input)).toBe(message)
   })
 
   it('корректные данные проходят без ошибок', () => {
     expect(firstError({})).toBeNull()
+    expect(firstError({ apiUrl: 'https://7107.api.greenapi.com' })).toBeNull()
   })
 })

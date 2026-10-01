@@ -125,6 +125,7 @@
 - Введите apiTokenInstance
 - Токен не должен содержать пробелов
 - Укажите адрес в формате https://…
+- Адрес должен быть на домене green-api.com или greenapi.com
 
 ## `features/sign-in/restore-session-gate.tsx`
 
@@ -182,10 +183,11 @@
 
 ## `features/tab-leadership/ui/other-tab-screen.tsx`
 
+- Переключаем…
+- Использовать здесь
 - MAX-чат — неактивна
 - Приложение открыто в другой вкладке
 - Сообщения получает только одна вкладка. Нажмите, чтобы продолжить здесь
-- Использовать здесь
 
 ## `features/toggle-theme/theme-toggle.tsx`
 

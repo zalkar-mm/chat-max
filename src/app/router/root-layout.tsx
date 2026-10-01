@@ -1,7 +1,12 @@
 import { useEffect } from 'react'
 import { Outlet } from 'react-router'
 
-import { startHistoryPersistence } from '@/features/persist-history/model/history-persistence'
+import {
+  flushHistory,
+  reloadHistory,
+  startHistoryCleanup,
+  startHistoryPersistence,
+} from '@/features/persist-history/model/history-persistence'
 import { startReceiving } from '@/features/receive-messages/model/receive-service'
 import { startSendQueue } from '@/features/send-message/model/send-queue'
 import { RestoreSessionGate } from '@/features/sign-in/restore-session-gate'
@@ -17,9 +22,14 @@ const whileActive = (isActive: boolean, start: () => () => void) => (isActive ? 
 export function RootLayout() {
   const isTabActive = useIsTabActive()
 
-  useEffect(() => startTabLeadership(), [])
+  // Смена активной вкладки: уступающая сохраняет историю сразу, забирающая — перечитывает её до работы.
+  useEffect(
+    () => startTabLeadership({ beforeActivate: reloadHistory, beforeDeactivate: flushHistory }),
+    [],
+  )
   useEffect(() => startConnectionTracking(), [])
   useEffect(() => startSessionCleanup(), [])
+  useEffect(() => startHistoryCleanup(), [])
   // Порядок важен: при возврате активности история перечитывается до того, как пойдёт получение.
   useEffect(() => whileActive(isTabActive, startHistoryPersistence), [isTabActive])
   useEffect(() => whileActive(isTabActive, startSendQueue), [isTabActive])

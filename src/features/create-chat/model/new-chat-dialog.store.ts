@@ -1,14 +1,21 @@
 import { create } from 'zustand'
 
+/**
+ * Запись формы в истории браузера («Назад» закрывает форму, DS §1):
+ * - `none` — нашей записи нет;
+ * - `own` — форма открыта и её запись наверху: закрытие из интерфейса снимает её «Назад»;
+ * - `handedOver` — запись заменяется переходом в созданный чат, трогать её нельзя.
+ */
+export type DialogHistoryEntry = 'none' | 'own' | 'handedOver'
+
 type NewChatDialogState = {
   isOpen: boolean
-  /** Наша запись наверху истории браузера, которую при закрытии из интерфейса нужно снять. */
-  hasHistoryEntry: boolean
+  historyEntry: DialogHistoryEntry
 }
 
 export const useNewChatDialogStore = create<NewChatDialogState>()(() => ({
   isOpen: false,
-  hasHistoryEntry: false,
+  historyEntry: 'none',
 }))
 
 // Кнопка-инициатор: после закрытия фокус возвращается на неё (кнопок открытия две).
@@ -42,15 +49,21 @@ export const DIALOG_ENTRY_STATE = { [DIALOG_ENTRY_KEY]: true } as const
 export const isDialogEntry = (state: unknown) =>
   typeof state === 'object' && state !== null && DIALOG_ENTRY_KEY in state
 
-export const markDialogHistoryEntry = () => {
-  useNewChatDialogStore.setState({ hasHistoryEntry: true })
+export const getDialogHistoryEntry = () => useNewChatDialogStore.getState().historyEntry
+
+export const setDialogHistoryEntry = (historyEntry: DialogHistoryEntry) => {
+  useNewChatDialogStore.setState({ historyEntry })
 }
 
-/** Забрать запись: true — она есть и теперь наша забота (снять «Назад» или заменить переходом). */
-export const takeDialogHistoryEntry = () => {
-  const had = useNewChatDialogStore.getState().hasHistoryEntry
-  useNewChatDialogStore.setState({ hasHistoryEntry: false })
-  return had
+/** Переход в созданный чат: true — запись формы есть, переход должен заменить её, а не добавить новую. */
+export const handOverDialogHistoryEntry = () => {
+  if (getDialogHistoryEntry() !== 'own') return false
+  setDialogHistoryEntry('handedOver')
+  return true
 }
 
-export const hasDialogHistoryEntry = () => useNewChatDialogStore.getState().hasHistoryEntry
+/** Сброс без навигации: страница с формой размонтирована. */
+export const resetNewChatDialog = () => {
+  returnFocusTarget = null
+  useNewChatDialogStore.setState({ isOpen: false, historyEntry: 'none' })
+}

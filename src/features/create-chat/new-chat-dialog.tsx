@@ -23,8 +23,9 @@ export function NewChatDialog() {
   useDialogHistory(isOpen)
 
   // Чанк формы — не в начальной загрузке, но подгружается сразу после неё: открытие без задержки.
+  // Ошибка загрузки (новый деплой, офлайн) здесь не важна: при открытии чанк запросится снова.
   useEffect(() => {
-    void loadBody()
+    loadBody().catch(() => undefined)
   }, [])
 
   return (

@@ -39,6 +39,8 @@ describe('Спринт 3, задача 6 — история после пере�
   it('2: «отправляется» во время F5 → «не отправлено» с «Повторить»', async () => {
     const { user, unmount } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
+    // F5: уходящая страница дописывает историю, поэтому «состояние на момент F5» подкладываем после неё.
+    unmount()
     sessionStorage.setItem(
       HISTORY_KEY('3100000001'),
       JSON.stringify({
@@ -67,7 +69,6 @@ describe('Спринт 3, задача 6 — история после пере�
         ],
       }),
     )
-    unmount()
     await renderApp({ path: '/chat/191234567' })
     expect(await screen.findByText('Не отправлено.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Повторить' })).toBeInTheDocument()

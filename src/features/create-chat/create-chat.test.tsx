@@ -1,5 +1,5 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
-import { http, HttpResponse } from 'msw'
+import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 
 import { server } from '@/mocks/node'
@@ -172,5 +172,37 @@ describe('Спринт 2, задача 2 — поиск номера и созд
       expect(router.state.historyAction).toBe('POP')
     })
     expect(entries).toBe('PUSH')
+  })
+
+  it('после F5/«Вперёд» с записью формы в истории «Назад» всё равно закрывает форму', async () => {
+    const view = await renderSignedInApp()
+    await act(() => view.router.navigate('/', { state: { newChatDialog: true } }))
+    await waitFor(() => {
+      expect(view.router.state.location.state).toBeNull()
+    })
+    await view.user.click(screen.getByRole('button', { name: 'Новый чат' }))
+    await screen.findByRole('dialog', { name: 'Новый чат' })
+    await act(() => view.router.navigate(-1))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  })
+
+  it('«Назад» во время проверки номера: форма закрыта, чат не создаётся и не открывается', async () => {
+    server.use(
+      http.post('*/waInstance:id/checkAccount/:token', async () => {
+        await delay(300)
+        return HttpResponse.json({ exist: true, chatId: '79991234567@c.us' })
+      }),
+    )
+    const { user, router, phone } = await openForm()
+    await user.type(phone, '79991234567{Enter}')
+    await act(() => router.navigate(-1))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    await act(() => new Promise((resolve) => setTimeout(resolve, 500)))
+    expect(router.state.location.pathname).toBe('/')
+    expect(screen.getByText('Здесь появятся ваши чаты')).toBeInTheDocument()
   })
 })

@@ -156,16 +156,24 @@ export function MessageFeed({ chatId, title }: MessageFeedProps) {
     if (feed) feed.scrollTop = feed.scrollHeight
   }, [chatId])
 
-  // Лента сжалась (баннер сверху, клавиатура, многострочное поле): кто был внизу — остаётся внизу.
+  // Кто был внизу — остаётся внизу:
+  // - лента сжалась (баннер сверху, клавиатура, многострочное поле) — сразу, без анимации;
+  // - содержимое выросло без нового сообщения («Не отправлено. Повторить» под пузырём) — плавно.
   useEffect(() => {
     const feed = scrollRef.current
-    if (!feed || typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(() => {
+    const content = feed?.firstElementChild
+    if (!feed || !content || typeof ResizeObserver === 'undefined') return
+    const viewportObserver = new ResizeObserver(() => {
       if (!isAwayRef.current) feed.scrollTop = feed.scrollHeight
     })
-    observer.observe(feed)
+    const contentObserver = new ResizeObserver(() => {
+      if (!isAwayRef.current) scrollToBottom(feed)
+    })
+    viewportObserver.observe(feed)
+    contentObserver.observe(content)
     return () => {
-      observer.disconnect()
+      viewportObserver.disconnect()
+      contentObserver.disconnect()
     }
   }, [])
 

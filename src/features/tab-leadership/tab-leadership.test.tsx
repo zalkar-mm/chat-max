@@ -9,7 +9,7 @@ import {
   pendingNotifications,
   pushNotification,
 } from '@/mocks/notification-queue'
-import { renderSignedInApp } from '@/test/render-app'
+import { createChatViaForm, renderSignedInApp } from '@/test/render-app'
 
 const ID = '3100000001'
 const STUB_TITLE = 'Приложение открыто в другой вкладке'
@@ -36,7 +36,12 @@ async function openedInOtherTab() {
   const view = await renderSignedInApp({ idInstance: ID })
   const other = otherTab()
   act(() => {
-    other.channel.postMessage({ type: 'claim', idInstance: ID })
+    // Захват позже нашего: эта вкладка уступает.
+    other.channel.postMessage({
+      type: 'claim',
+      idInstance: ID,
+      claim: { tabId: 'other', at: Date.now() + 1_000 },
+    })
   })
   expect(await screen.findByRole('heading', { name: STUB_TITLE })).toBeInTheDocument()
   return { ...view, other }
@@ -77,7 +82,9 @@ describe('Спринт 4, задача 3 — работа в двух вклад
 
     expect(await screen.findByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
     await waitFor(() => {
-      expect(other.received).toContainEqual({ type: 'claim', idInstance: ID })
+      expect(other.received).toContainEqual(
+        expect.objectContaining({ type: 'claim', idInstance: ID }),
+      )
     })
     const list = screen.getByRole('navigation', { name: 'Чаты' })
     expect(await within(list).findByText('Пока вас не было')).toBeInTheDocument()
@@ -121,8 +128,9 @@ describe('Спринт 4, задача 3 — работа в двух вклад
     expect(await screen.findByRole('heading', { name: 'Вход' })).toBeInTheDocument()
   })
 
-  it('3: «Выйти» на заглушке → экран входа здесь и выход в другой вкладке', async () => {
+  it('3: «Выйти» на заглушке → экран входа здесь, выход в другой вкладке, история удалена', async () => {
     const { user, other } = await openedInOtherTab()
+    sessionStorage.setItem(`max-chat:history:${ID}`, '{}')
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
 
     expect(await screen.findByRole('heading', { name: 'Вход' })).toBeInTheDocument()
@@ -133,5 +141,22 @@ describe('Спринт 4, задача 3 — работа в двух вклад
         reason: 'signOut',
       })
     })
+    expect(sessionStorage.getItem(`max-chat:history:${ID}`)).toBeNull()
+  })
+
+  it('уступая, активная вкладка сразу сохраняет несохранённое и отвечает «released»', async () => {
+    const { user } = await renderSignedInApp({ idInstance: ID })
+    await createChatViaForm(user, '79991234567')
+    const other = otherTab()
+    act(() => {
+      other.channel.postMessage({
+        type: 'claim',
+        idInstance: ID,
+        claim: { tabId: 'other', at: Date.now() + 1_000 },
+      })
+    })
+    expect(await screen.findByRole('heading', { name: STUB_TITLE })).toBeInTheDocument()
+    expect(sessionStorage.getItem(`max-chat:history:${ID}`)).toContain('191234567')
+    expect(other.received).toContainEqual({ type: 'released', idInstance: ID, to: 'other' })
   })
 })

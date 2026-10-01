@@ -2,6 +2,7 @@ import { cleanup, configure } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 
 import { FakeBroadcastChannel } from './fake-broadcast-channel'
+import { FakeLockManager } from './fake-lock-manager'
 
 import '@testing-library/jest-dom/vitest'
 import './zustand-mock'
@@ -45,6 +46,10 @@ Object.defineProperty(globalThis, 'BroadcastChannel', {
   value: FakeBroadcastChannel,
 })
 
+// Web Locks — тоже в памяти: по ним новая вкладка видит, есть ли активная (см. tab-leadership).
+const locks = new FakeLockManager()
+Object.defineProperty(navigator, 'locks', { configurable: true, value: locks })
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' })
 })
@@ -55,6 +60,7 @@ afterEach(() => {
   server.events.removeAllListeners()
   resetScenarios()
   FakeBroadcastChannel.reset()
+  locks.reset()
   sessionStorage.clear()
   localStorage.clear()
 })

@@ -1,6 +1,7 @@
 import { z } from 'zod/mini'
 
 import { DEFAULT_API_URL } from '@/shared/config/env'
+import { isGreenApiUrl } from '@/shared/config/green-api-hosts'
 
 export const signInSchema = z.object({
   idInstance: z
@@ -19,7 +20,11 @@ export const signInSchema = z.object({
     ),
   apiUrl: z
     .string()
-    .check(z.trim(), z.regex(/^https:\/\/\S+$/, 'Укажите адрес в формате https://…')),
+    .check(
+      z.trim(),
+      z.regex(/^https:\/\/\S+$/, 'Укажите адрес в формате https://…'),
+      z.refine(isGreenApiUrl, 'Адрес должен быть на домене green-api.com или greenapi.com'),
+    ),
   remember: z.boolean(),
 })
 
