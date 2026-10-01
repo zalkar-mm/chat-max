@@ -128,3 +128,5 @@ export const stateBody = (stateInstance: string) => ({
   timestamp: nowSeconds(),
   stateInstance,
 })
+
+export const pendingNotifications = (idInstance: string) => queueFor(idInstance).items.length
