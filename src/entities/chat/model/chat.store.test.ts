@@ -28,7 +28,9 @@ describe('chat.store', () => {
     expect(chat).toEqual({
       id: 'a',
       phone: '79991234567',
+      name: null,
       title: '+7 999 123-45-67',
+      unreadCount: 0,
       createdAt: 10,
       lastActivityAt: 10,
     })

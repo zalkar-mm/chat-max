@@ -128,8 +128,8 @@
   --bubble-out-bg: #0070eb;
   --bubble-out-gradient: linear-gradient(135deg, #17a8e5 0%, #0b8ce8 50%, #0070eb 100%);
   --bubble-out-text: #fff;
-  --bubble-out-time: #ffffffa3;
-  --bubble-out-status: #ffffffe0;
+  --bubble-out-time: #ffffffd6;
+  --bubble-out-status: #ffffffd6;
 
   --counter-bg: #007aff;
   --counter-text: #fff;
@@ -184,8 +184,8 @@
   --bubble-out-bg: #2258cc;
   --bubble-out-gradient: linear-gradient(135deg, #4429cc 0%, #2251e5 50%, #0088cc 100%);
   --bubble-out-text: #fff;
-  --bubble-out-time: #ffffffa3;
-  --bubble-out-status: #ffffffe0;
+  --bubble-out-time: #ffffffd6;
+  --bubble-out-status: #ffffffd6;
 
   --positive: #2bc644;
   --negative: #ce4257;
@@ -314,4 +314,45 @@
   --bubble-unsupported-fg-out: #ffffffa3;
   --fab-badge-bg: #007aff;
   --fab-badge-fg: #fff;
+}
+
+/* ---- Sprint 4 additions: focus, motion, skeleton, touch ---- */
+:root {
+  --focus-ring:
+    0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent); /* двойное кольцо — видно на любом фоне */
+  --focus-ring-inset: inset 0 0 0 2px var(--accent);
+  --touch-min: 44px;
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 240ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --skeleton-radius: 8px;
+}
+:root,
+:root[data-theme='light'] {
+  --skeleton-base: #0909090d;
+  --skeleton-shine: #0909091a;
+  --skip-link-bg: #17181c;
+  --skip-link-fg: #fff;
+}
+:root[data-theme='dark'] {
+  --skeleton-base: #ffffff14;
+  --skeleton-shine: #ffffff24;
+  --skip-link-bg: #fff;
+  --skip-link-fg: #060708;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,6 +1,7 @@
 import { User } from 'lucide-react'
 
 import { cn } from '@/shared/lib/cn'
+import { Gate } from '@/shared/ui/gate'
 
 import { type AvatarTone, getAvatarTone } from '../lib/avatar-tone'
 
@@ -24,12 +25,26 @@ const ICON_CLASS: Record<AvatarSize, string> = {
   48: 'size-6',
 }
 
+const INITIAL_CLASS: Record<AvatarSize, string> = {
+  36: 'typo-body-strong',
+  48: 'typo-title',
+}
+
 export type ChatAvatarProps = {
   chatId: string
   size: AvatarSize
+  /** Имя собеседника: есть — показываем инициал вместо иконки. */
+  name?: string | null
 }
 
-export function ChatAvatar({ chatId, size }: ChatAvatarProps) {
+const toInitial = (name: string | null) => {
+  const letter = name?.trim().charAt(0) ?? ''
+  return letter.toLocaleUpperCase('ru-RU')
+}
+
+export function ChatAvatar({ chatId, size, name = null }: ChatAvatarProps) {
+  const initial = toInitial(name)
+  const hasInitial = initial !== ''
   const rootCn = cn(
     'flex shrink-0 items-center justify-center rounded-full text-white',
     SIZE_CLASS[size],
@@ -38,7 +53,9 @@ export function ChatAvatar({ chatId, size }: ChatAvatarProps) {
 
   return (
     <span className={rootCn} aria-hidden>
-      <User className={ICON_CLASS[size]} />
+      <Gate when={hasInitial} fallback={<User className={ICON_CLASS[size]} />}>
+        <span className={INITIAL_CLASS[size]}>{initial}</span>
+      </Gate>
     </span>
   )
 }

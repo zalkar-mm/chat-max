@@ -142,6 +142,7 @@ export function editCredentials() {
 }
 
 export function clearSignInError() {
+  useSessionStore.getState().clearEndReason()
   const step = getSignInStep()
   if (step.kind !== 'form') return
   if (step.error === null && !step.isSessionExpired) return

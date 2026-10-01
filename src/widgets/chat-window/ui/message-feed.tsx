@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import {
   MessageSendFailure,
@@ -7,11 +7,15 @@ import {
 
 import { buildMessageRows, type MessageRow } from '@/entities/message/lib/group-messages'
 import { useChatMessages } from '@/entities/message/model/message.store'
+import type { Message } from '@/entities/message/model/message.types'
 import { DayDivider } from '@/entities/message/ui/day-divider'
 import { MessageBubble } from '@/entities/message/ui/message-bubble'
 
 import { cn } from '@/shared/lib/cn'
 import { useNow } from '@/shared/lib/use-now'
+import { Gate } from '@/shared/ui/gate'
+
+import { NewMessagesButton } from './new-messages-button'
 
 type MessageFeedProps = {
   chatId: string
@@ -56,12 +60,41 @@ function FeedContent({ rows }: FeedContentProps) {
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+const scrollBehavior = (): ScrollBehavior => (prefersReducedMotion() ? 'auto' : 'smooth')
+
+/** Дальше этого расстояния от низа лента не прокручивается сама к новому входящему. */
+const NEAR_BOTTOM_PX = 100
+
+const isNearBottom = (feed: HTMLElement) =>
+  feed.scrollHeight - feed.scrollTop - feed.clientHeight <= NEAR_BOTTOM_PX
+
+const scrollToBottom = (feed: HTMLElement) => {
+  feed.scrollTo({ top: feed.scrollHeight, behavior: scrollBehavior() })
+}
+
+const countIncoming = (messages: readonly Message[]) =>
+  messages.filter((message) => message.direction === 'incoming').length
+
 export function MessageFeed({ chatId }: MessageFeedProps) {
   const messages = useChatMessages(chatId)
   const now = useNow()
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastMessage = messages.at(-1)
-  const lastOutgoingId = lastMessage?.direction === 'outgoing' ? lastMessage.id : null
+  // Своя отправка отсюда — только что добавленное «отправляется»; всё прочее (входящие, сообщения с телефона,
+  // эхо) пришло извне и не должно дёргать ленту, если пользователь листает историю.
+  const isLocalSend =
+    lastMessage?.direction === 'outgoing' && lastMessage.delivery.status === 'sending'
+  const lastLocalSendId = isLocalSend ? lastMessage.id : null
+  const lastExternalId = isLocalSend ? null : (lastMessage?.id ?? null)
+  const incomingCount = countIncoming(messages)
+
+  // Число входящих в момент, когда пользователь ушёл от низа ленты; null — он внизу.
+  const [incomingWhenAway, setIncomingWhenAway] = useState<number | null>(null)
+  const isAwayRef = useRef(false)
+  const seenExternalIdRef = useRef(lastExternalId)
+  const isAway = incomingWhenAway !== null
+  const newCount = isAway ? incomingCount - incomingWhenAway : 0
+  const hasNewMessages = newCount > 0
 
   // Открытие чата — сразу внизу, до первого кадра, без анимации.
   useLayoutEffect(() => {
@@ -69,28 +102,74 @@ export function MessageFeed({ chatId }: MessageFeedProps) {
     if (feed) feed.scrollTop = feed.scrollHeight
   }, [chatId])
 
+  // Лента сжалась (баннер сверху, клавиатура, многострочное поле): кто был внизу — остаётся внизу.
+  useEffect(() => {
+    const feed = scrollRef.current
+    if (!feed || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => {
+      if (!isAwayRef.current) feed.scrollTop = feed.scrollHeight
+    })
+    observer.observe(feed)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
   // Своя отправка — плавно к новому сообщению.
   useEffect(() => {
     const feed = scrollRef.current
-    if (!feed || lastOutgoingId === null) return
-    const behavior = prefersReducedMotion() ? 'auto' : 'smooth'
-    feed.scrollTo({ top: feed.scrollHeight, behavior })
-  }, [lastOutgoingId])
+    if (!feed || lastLocalSendId === null) return
+    scrollToBottom(feed)
+  }, [lastLocalSendId])
+
+  // Новое сообщение извне: пользователь внизу — плавно к нему; листает историю — лента не прыгает,
+  // а у входящих растёт счётчик кнопки «↓».
+  useEffect(() => {
+    const feed = scrollRef.current
+    if (!feed || lastExternalId === null || lastExternalId === seenExternalIdRef.current) return
+    seenExternalIdRef.current = lastExternalId
+    if (!isAwayRef.current) scrollToBottom(feed)
+  }, [lastExternalId])
+
+  const handleScroll = () => {
+    const feed = scrollRef.current
+    if (!feed) return
+    const isAwayNow = !isNearBottom(feed)
+    if (isAwayNow === isAwayRef.current) return
+    isAwayRef.current = isAwayNow
+    setIncomingWhenAway(isAwayNow ? incomingCount : null)
+  }
+
+  const handleScrollDown = () => {
+    const feed = scrollRef.current
+    if (feed) scrollToBottom(feed)
+    isAwayRef.current = false
+    setIncomingWhenAway(null)
+  }
 
   const rows = buildMessageRows(messages, now)
 
   // Регион лога смонтирован и для пустого чата: первое сообщение объявляется скринридером.
   return (
-    <div ref={scrollRef} className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <div className="relative flex min-h-0 flex-1 flex-col">
       <div
-        className="mx-auto flex w-full max-w-(--chat-content-max-w) flex-1 flex-col px-3 pt-3 pb-2 md:px-4 md:pt-4"
-        role="log"
-        aria-live="polite"
-        aria-relevant="additions"
-        aria-label="Сообщения"
+        ref={scrollRef}
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+        onScroll={handleScroll}
       >
-        <FeedContent rows={rows} />
+        <div
+          className="mx-auto flex w-full max-w-(--chat-content-max-w) flex-1 flex-col px-3 pt-3 pb-2 md:px-4 md:pt-4"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+          aria-label="Сообщения"
+        >
+          <FeedContent rows={rows} />
+        </div>
       </div>
+      <Gate when={hasNewMessages}>
+        <NewMessagesButton count={newCount} onClick={handleScrollDown} />
+      </Gate>
     </div>
   )
 }

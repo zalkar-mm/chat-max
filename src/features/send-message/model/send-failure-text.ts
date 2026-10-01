@@ -14,4 +14,5 @@ export const SEND_FAILURE_TEXT: Readonly<Record<SendFailure, FailureText>> = {
   quotaExceeded: { text: 'Не отправлено: исчерпан лимит бесплатного тарифа', canRetry: false },
   rejected: { text: 'Не отправлено: сервер отклонил сообщение.', canRetry: true },
   failed: { text: 'Не отправлено.', canRetry: true },
+  undelivered: { text: 'Не доставлено.', canRetry: true },
 }

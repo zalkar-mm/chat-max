@@ -13,6 +13,7 @@ const outgoing = (delivery: Extract<Message, { direction: 'outgoing' }>['deliver
   text: 'привет',
   createdAt: CREATED_AT,
   direction: 'outgoing',
+  content: 'text',
   delivery,
 })
 
@@ -22,6 +23,7 @@ const incoming = (text: string): Message => ({
   text,
   createdAt: CREATED_AT,
   direction: 'incoming',
+  content: 'text',
   idMessage: 'X1',
 })
 

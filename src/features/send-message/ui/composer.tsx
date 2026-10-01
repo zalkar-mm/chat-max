@@ -49,7 +49,8 @@ export function Composer({ model, textareaRef }: ComposerProps) {
             aria-describedby={describedBy}
             invalid={isOverLimit}
             disabled={isTextareaDisabled}
-            className="min-h-10 overflow-y-auto"
+            // Длинный плейсхолдер неактивного поля на узком экране не влезает в строку — даём ему две.
+            className="min-h-10 overflow-y-auto max-md:disabled:placeholder-shown:min-h-16"
             onChange={model.onChange}
             onKeyDown={model.onKeyDown}
           />
