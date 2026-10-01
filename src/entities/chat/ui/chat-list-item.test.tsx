@@ -64,4 +64,9 @@ describe('ChatListItem', () => {
     renderItem({ isSelected: true })
     expect(screen.getByRole('button')).toHaveAttribute('aria-current', 'true')
   })
+
+  it('с непрочитанными добавляет их число в доступное имя', () => {
+    renderItem({ unreadCount: 12 })
+    expect(screen.getByRole('button')).toHaveAccessibleName('+7 999 123-45-67, 12 непрочитанных')
+  })
 })

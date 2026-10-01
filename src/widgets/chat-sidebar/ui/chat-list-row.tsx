@@ -14,10 +14,15 @@ type ChatListRowProps = {
   now: number
 }
 
+const UNSUPPORTED_PREVIEW = 'Сообщение этого типа не поддерживается'
+
+const toPreviewText = (message: Message) =>
+  message.content === 'unsupported' ? UNSUPPORTED_PREVIEW : message.text
+
 const toPreview = (message: Message | null) => {
   if (!message) return null
-  if (message.direction === 'outgoing') return `Вы: ${message.text}`
-  return message.text
+  if (message.direction === 'outgoing') return `Вы: ${toPreviewText(message)}`
+  return toPreviewText(message)
 }
 
 const toStatus = (message: Message | null): ChatListItemStatus | null => {
@@ -42,10 +47,11 @@ export function ChatListRow({ chatId, selectedChatId, now }: ChatListRowProps) {
     <ChatListItem
       chatId={chat.id}
       title={chat.title}
+      name={chat.name}
       preview={toPreview(lastMessage)}
       time={time}
       status={toStatus(lastMessage)}
-      unreadCount={0}
+      unreadCount={chat.unreadCount}
       isSelected={isSelected}
       onOpen={handleOpen}
     />

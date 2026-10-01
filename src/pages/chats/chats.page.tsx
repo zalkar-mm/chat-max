@@ -1,6 +1,7 @@
 import { useParams } from 'react-router'
 
 import { ChatSidebar } from '@/widgets/chat-sidebar/chat-sidebar'
+import { UnreadTitle } from '@/widgets/chat-sidebar/unread-title'
 import { ChatWindow } from '@/widgets/chat-window/chat-window'
 import { NoChatSelected } from '@/widgets/chat-window/no-chat-selected'
 import { StatusBanners } from '@/widgets/status-banners/status-banners'
@@ -34,7 +35,7 @@ export function ChatsPage() {
 
   return (
     <div className="flex h-dvh flex-col bg-surface">
-      <title>MAX-чат</title>
+      <UnreadTitle />
       <StatusBanners />
       <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[var(--sidebar-w-narrow)_minmax(0,1fr)] xl:grid-cols-[var(--sidebar-w)_minmax(0,1fr)]">
         <ChatSidebar selectedChatId={chatId} isHidden={isChatOpen} className={sidebarCn} />
