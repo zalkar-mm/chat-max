@@ -2,6 +2,8 @@ import { screen } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { DEFAULT_API_URL } from '@/shared/config/env'
+
 import { server } from '@/mocks/node'
 import { renderApp } from '@/test/render-app'
 
@@ -27,7 +29,14 @@ describe('Задача 3 — сохранение и восстановлени�
     await view.user.click(screen.getByRole('button', { name: 'Войти' }))
     await screen.findByRole('heading', { name: 'Чаты' })
 
-    expect(localStorage.getItem(STORAGE_KEY)).toBe(storedCredentials())
+    // apiUrl в форме не трогали — сохраняется хост по умолчанию.
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(
+      JSON.stringify({
+        idInstance: '3100000001',
+        apiTokenInstance: 'token',
+        apiUrl: DEFAULT_API_URL,
+      }),
+    )
     expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull()
   })
 
