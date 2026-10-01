@@ -47,7 +47,7 @@ function applyIncoming(event: IncomingMessageEvent) {
 }
 
 function addOutgoing(event: OutgoingMessageEvent) {
-  ensureChat({ chatId: event.chatId, now: activityAt(event) })
+  ensureChat({ chatId: event.chatId, name: event.name, now: activityAt(event) })
   const isAdded = addSyncedOutgoingMessage({
     chatId: event.chatId,
     idMessage: event.idMessage,

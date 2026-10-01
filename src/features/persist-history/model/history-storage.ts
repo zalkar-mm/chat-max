@@ -74,7 +74,7 @@ export function readHistory(storage: Storage, idInstance: string): History | nul
   }
 }
 
-function trimMessages(messages: readonly Message[]) {
+function trimMessages(messages: readonly Message[], perChat: number) {
   const byChat = new Map<string, Message[]>()
   for (const message of messages) {
     const list = byChat.get(message.chatId) ?? []
@@ -82,21 +82,38 @@ function trimMessages(messages: readonly Message[]) {
     byChat.set(message.chatId, list)
   }
   return [...byChat.values()].flatMap((list) =>
-    list.toSorted((left, right) => left.createdAt - right.createdAt).slice(-MAX_MESSAGES_PER_CHAT),
+    list.toSorted((left, right) => left.createdAt - right.createdAt).slice(-perChat),
   )
 }
 
-/** Сохранение не роняет приложение: нет места или хранилище запрещено — история живёт до перезагрузки. */
-export function writeHistory(storage: Storage, idInstance: string, history: History) {
+/** Запасной лимит, если полная история не влезла в хранилище. */
+const FALLBACK_MESSAGES_PER_CHAT = 100
+
+function trySave(storage: Storage, idInstance: string, history: History, perChat: number) {
   try {
     const payload = {
       version: VERSION,
       chats: history.chats,
-      messages: trimMessages(history.messages),
+      messages: trimMessages(history.messages, perChat),
     }
     storage.setItem(keyFor(idInstance), JSON.stringify(payload))
+    return true
   } catch {
-    // QuotaExceededError / SecurityError — работаем без сохранения.
+    return false
+  }
+}
+
+/**
+ * Сохранение не роняет приложение. Нет места — пробуем короче; не вышло и так — удаляем старый снимок,
+ * чтобы после F5 не показать устаревшую историю вместо свежей.
+ */
+export function writeHistory(storage: Storage, idInstance: string, history: History) {
+  if (trySave(storage, idInstance, history, MAX_MESSAGES_PER_CHAT)) return
+  if (trySave(storage, idInstance, history, FALLBACK_MESSAGES_PER_CHAT)) return
+  try {
+    storage.removeItem(keyFor(idInstance))
+  } catch {
+    // Хранилище недоступно целиком — история живёт до перезагрузки.
   }
 }
 

@@ -20,6 +20,8 @@ export type OutgoingMessageEvent = {
   source: 'api' | 'phone'
   idMessage: string
   chatId: string
+  /** Название чата получателя, если MAX его прислал (сообщение с телефона в новый чат). */
+  name: string | null
   text: string
   content: MessageContent
   sentAt: number

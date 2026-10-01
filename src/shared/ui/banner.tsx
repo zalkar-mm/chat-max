@@ -71,6 +71,7 @@ export function BannerAction({
   type = 'button',
   className,
   children,
+  onClick,
   ...props
 }: BannerActionProps) {
   const isInactive = disabled && !loading
@@ -81,13 +82,21 @@ export function BannerAction({
     className,
   )
 
+  // Во время загрузки кнопка остаётся в фокусе (aria-disabled вместо disabled), клик игнорируется.
+  const handleClick: BannerActionProps['onClick'] = (event) => {
+    if (loading) return
+    onClick?.(event)
+  }
+
   return (
     <button
       type={type}
       className={rootCn}
-      disabled={disabled || loading}
+      disabled={disabled}
+      aria-disabled={loading || undefined}
       aria-busy={loading}
       {...props}
+      onClick={handleClick}
     >
       <Gate when={loading}>
         <Spinner size={20} className="size-4" />

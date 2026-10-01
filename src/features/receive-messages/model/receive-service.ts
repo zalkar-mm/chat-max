@@ -31,10 +31,22 @@ const poller = createNotificationPoller({
   handle: (notification) => {
     applyNotification(parseNotification(notification.body))
   },
-  onFailure: ({ failures, retryInMs, kind }) => {
-    // Офлайн показывает свой баннер; «сервис недоступен» — только про сбои сервера.
-    if (kind === ApiErrorKind.Offline) return
-    setReceiveState({ consecutiveFailures: failures, retryAt: Date.now() + retryInMs })
+  onFailure: ({ retryInMs, kind }) => {
+    // «Сервис недоступен» — только про сбои сервера подряд: офлайн показывает свой баннер и сбрасывает серию,
+    // лимит тарифа — свой баннер.
+    if (kind === ApiErrorKind.Offline) {
+      setReceiveState({ consecutiveFailures: 0, retryAt: null })
+      return
+    }
+    if (kind === ApiErrorKind.QuotaExceeded) return
+    const { consecutiveFailures } = useReceiveStore.getState()
+    setReceiveState({
+      consecutiveFailures: consecutiveFailures + 1,
+      retryAt: Date.now() + retryInMs,
+    })
+  },
+  onQuotaExceeded: () => {
+    useSessionStore.getState().markQuotaExceeded()
   },
   onRecovered: () => {
     setReceiveState({ consecutiveFailures: 0, retryAt: null })
@@ -49,9 +61,38 @@ const poller = createNotificationPoller({
 
 let activation: AbortController | null = null
 
+/** Пока инстанс отключён, очередь не опрашивается — его статус проверяем сами, раз в столько. */
+export const DISCONNECTED_RECHECK_MS = 15_000
+let disconnectedTimer: ReturnType<typeof setInterval> | null = null
+
+function stopDisconnectedRecheck() {
+  if (disconnectedTimer !== null) clearInterval(disconnectedTimer)
+  disconnectedTimer = null
+}
+
+/** Отключённый инстанс: цикл на паузе, статус проверяется по таймеру — вернулся authorized, баннер уходит сам. */
+function enterDisconnected() {
+  poller.pause()
+  setReceiveState({
+    phase: ReceivePhase.InstanceDisconnected,
+    consecutiveFailures: 0,
+    retryAt: null,
+  })
+  if (disconnectedTimer !== null) return
+  disconnectedTimer = setInterval(() => {
+    const credentials = getSessionCredentials()
+    if (!credentials) return
+    checkInstanceState(credentials)
+      .then((state) => {
+        useSessionStore.getState().setInstanceState(state)
+      })
+      .catch(() => undefined)
+  }, DISCONNECTED_RECHECK_MS)
+}
+
 /**
  * Запуск получения для текущей сессии: Webhook URL в настройках — не запускаем,
- * инстанс не готов — ждём «Проверить снова».
+ * инстанс не готов — пауза с периодической проверкой статуса.
  */
 async function activate() {
   const credentials = getSessionCredentials()
@@ -66,7 +107,11 @@ async function activate() {
     setReceiveState({ isIncomingDisabled: settings.isIncomingDisabled })
     if (settings.hasWebhookUrl) {
       poller.pause()
-      setReceiveState({ phase: ReceivePhase.WebhookConfigured })
+      setReceiveState({
+        phase: ReceivePhase.WebhookConfigured,
+        consecutiveFailures: 0,
+        retryAt: null,
+      })
       return
     }
   } catch {
@@ -76,15 +121,16 @@ async function activate() {
 
   const state = useSessionStore.getState().instanceState
   if (state !== null && !isUsableInstanceState(state)) {
-    poller.pause()
-    setReceiveState({ phase: ReceivePhase.InstanceDisconnected })
+    enterDisconnected()
     return
   }
+  stopDisconnectedRecheck()
   setReceiveState({ phase: ReceivePhase.Running })
   poller.start()
 }
 
 function deactivate() {
+  stopDisconnectedRecheck()
   activation?.abort()
   activation = null
   poller.stop()
@@ -126,8 +172,7 @@ export function startReceiving() {
   const unsubscribeState = useSessionStore.subscribe((state, previous) => {
     if (state.instanceState === previous.instanceState || !state.credentials) return
     if (state.instanceState !== null && !isUsableInstanceState(state.instanceState)) {
-      poller.pause()
-      setReceiveState({ phase: ReceivePhase.InstanceDisconnected })
+      enterDisconnected()
       return
     }
     if (useReceiveStore.getState().phase === ReceivePhase.InstanceDisconnected) void activate()

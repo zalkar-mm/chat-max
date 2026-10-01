@@ -32,6 +32,8 @@ const sendQueue = createSendQueue(
       if (kind === ApiErrorKind.Forbidden) {
         useSessionStore.getState().setInstanceState(InstanceState.Suspended)
       }
+      // 466 — лимит тарифа: кроме ошибки у сообщения, общий жёлтый баннер.
+      if (kind === ApiErrorKind.QuotaExceeded) useSessionStore.getState().markQuotaExceeded()
     },
   },
   toSendFailure,

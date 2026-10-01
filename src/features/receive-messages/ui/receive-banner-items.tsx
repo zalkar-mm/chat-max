@@ -4,10 +4,8 @@ import { GREEN_API_CONSOLE_URL } from '@/shared/config/env'
 import { Banner, BannerAction, BannerLink } from '@/shared/ui/banner'
 import { Gate } from '@/shared/ui/gate'
 
-import { useCountdown } from '../model/use-countdown'
-
 type ServiceUnavailableBannerProps = {
-  retryAt: number | null
+  secondsLeft: number
 }
 
 type RecheckActionsProps = {
@@ -50,22 +48,23 @@ function RecheckActions({ isRechecking, onRecheck }: RecheckActionsProps) {
   )
 }
 
+// Отсчёт меняется каждую секунду внутри региона role="alert": для скринридера он скрыт,
+// вместо него — постоянная фраза, которая объявляется один раз.
 function RetryCountdown({ secondsLeft }: RetryCountdownProps) {
   return (
-    <Gate when={secondsLeft > 0} fallback="Повторяем…">
-      Повторим через{' '}
-      <span className="inline-block min-w-[2ch] tabular-nums" aria-live="off">
-        {secondsLeft}
-      </span>{' '}
-      с
-    </Gate>
+    <>
+      <span aria-hidden>
+        <Gate when={secondsLeft > 0} fallback="Повторяем…">
+          Повторим через{' '}
+          <span className="inline-block min-w-[2ch] tabular-nums">{secondsLeft}</span> с
+        </Gate>
+      </span>
+      <span className="sr-only">Повторим автоматически.</span>
+    </>
   )
 }
 
-export function ServiceUnavailableBanner({ retryAt }: ServiceUnavailableBannerProps) {
-  const secondsLeft = useCountdown(retryAt)
-  if (secondsLeft === null) return null
-
+export function ServiceUnavailableBanner({ secondsLeft }: ServiceUnavailableBannerProps) {
   return (
     <Banner tone="error" icon={<ServerCrash className="size-5" aria-hidden />}>
       Сервис GREEN-API недоступен. <RetryCountdown secondsLeft={secondsLeft} />

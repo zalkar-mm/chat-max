@@ -80,14 +80,18 @@ export function MessageFeed({ chatId }: MessageFeedProps) {
   const now = useNow()
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastMessage = messages.at(-1)
-  const lastOutgoingId = lastMessage?.direction === 'outgoing' ? lastMessage.id : null
-  const lastIncomingId = lastMessage?.direction === 'incoming' ? lastMessage.id : null
+  // Своя отправка отсюда — только что добавленное «отправляется»; всё прочее (входящие, сообщения с телефона,
+  // эхо) пришло извне и не должно дёргать ленту, если пользователь листает историю.
+  const isLocalSend =
+    lastMessage?.direction === 'outgoing' && lastMessage.delivery.status === 'sending'
+  const lastLocalSendId = isLocalSend ? lastMessage.id : null
+  const lastExternalId = isLocalSend ? null : (lastMessage?.id ?? null)
   const incomingCount = countIncoming(messages)
 
   // Число входящих в момент, когда пользователь ушёл от низа ленты; null — он внизу.
   const [incomingWhenAway, setIncomingWhenAway] = useState<number | null>(null)
   const isAwayRef = useRef(false)
-  const seenIncomingIdRef = useRef(lastIncomingId)
+  const seenExternalIdRef = useRef(lastExternalId)
   const isAway = incomingWhenAway !== null
   const newCount = isAway ? incomingCount - incomingWhenAway : 0
   const hasNewMessages = newCount > 0
@@ -101,17 +105,18 @@ export function MessageFeed({ chatId }: MessageFeedProps) {
   // Своя отправка — плавно к новому сообщению.
   useEffect(() => {
     const feed = scrollRef.current
-    if (!feed || lastOutgoingId === null) return
+    if (!feed || lastLocalSendId === null) return
     scrollToBottom(feed)
-  }, [lastOutgoingId])
+  }, [lastLocalSendId])
 
-  // Новое входящее: пользователь внизу — плавно к нему; листает историю — лента не прыгает, растёт счётчик кнопки.
+  // Новое сообщение извне: пользователь внизу — плавно к нему; листает историю — лента не прыгает,
+  // а у входящих растёт счётчик кнопки «↓».
   useEffect(() => {
     const feed = scrollRef.current
-    if (!feed || lastIncomingId === null || lastIncomingId === seenIncomingIdRef.current) return
-    seenIncomingIdRef.current = lastIncomingId
+    if (!feed || lastExternalId === null || lastExternalId === seenExternalIdRef.current) return
+    seenExternalIdRef.current = lastExternalId
     if (!isAwayRef.current) scrollToBottom(feed)
-  }, [lastIncomingId])
+  }, [lastExternalId])
 
   const handleScroll = () => {
     const feed = scrollRef.current

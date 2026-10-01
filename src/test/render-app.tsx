@@ -10,6 +10,7 @@ import { routes } from '@/app/router/routes'
 
 import { initSignInFlow } from '@/features/sign-in/model/sign-in-flow.store'
 
+import { formatPhone, normalizePhone } from '@/entities/chat/lib/phone'
 import { useSessionStore } from '@/entities/session/model/session.store'
 
 type RenderAppOptions = {
@@ -65,4 +66,7 @@ export async function createChatViaForm(user: ReturnType<typeof userEvent.setup>
   await waitFor(() => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
+  // Переход на чат — transition роутера: ждём, пока смонтируется окно именно этого чата
+  // (поле ввода предыдущего открытого чата живёт до коммита перехода).
+  await screen.findByRole('region', { name: formatPhone(normalizePhone(phone)) })
 }

@@ -37,6 +37,7 @@ const setup = (script: Script, overrides: Partial<NotificationPollerDeps> = {}) 
     onFailure: vi.fn(),
     onRecovered: vi.fn(),
     onUnauthorized: vi.fn(),
+    onQuotaExceeded: vi.fn(),
     ...overrides,
   }
   const poller = createNotificationPoller(deps)

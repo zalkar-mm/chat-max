@@ -10,7 +10,10 @@ type ChatState = {
   byId: Record<ChatId, Chat>
   chatIdByPhone: Record<string, ChatId>
   drafts: Record<ChatId, string>
-  /** Чат, который пользователь сейчас видит на экране: в него входящие не считаются непрочитанными. */
+  /**
+   * Чат, который пользователь сейчас видит. Открытый чат — в URL; здесь его отражение для сервисов вне React
+   * (обработка входящих): входящие в видимый чат не считаются непрочитанными. Пишет только окно чата.
+   */
   viewedChatId: ChatId | null
 }
 
@@ -144,10 +147,8 @@ export function hydrateChats(chats: readonly Chat[]) {
     byId[chat.id] = chat
     if (chat.phone !== null) chatIdByPhone[chat.phone] = chat.id
   }
-  useChatStore.setState(
-    { ...INITIAL, ids: chats.map((chat) => chat.id), byId, chatIdByPhone },
-    true,
-  )
+  // Открытый чат и черновики — состояние экрана, а не истории: восстановление их не затирает.
+  useChatStore.setState({ ids: chats.map((chat) => chat.id), byId, chatIdByPhone })
 }
 
 /** Подписка на изменения чатов вне React (сохранение истории). */

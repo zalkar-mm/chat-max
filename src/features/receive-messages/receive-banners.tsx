@@ -7,6 +7,7 @@ import {
   useServiceUnavailableRetryAt,
 } from './model/receive.store'
 import { dismissIncomingWarning, recheckReceiving } from './model/receive-service'
+import { useCountdown } from './model/use-countdown'
 import {
   IncomingDisabledBanner,
   InstanceDisconnectedBanner,
@@ -40,14 +41,15 @@ const useIsIncomingWarningVisible = () =>
 /** Ошибки получения по приоритету: сервис недоступен → инстанс отключён → Webhook. */
 export function ReceiveErrorBanners({ maxErrors }: ReceiveErrorBannersProps) {
   const retryAt = useServiceUnavailableRetryAt()
+  const secondsLeft = useCountdown(retryAt)
   const phase = useReceivePhase()
   const isRechecking = useReceiveStore((state) => state.isRechecking)
 
   const items: ReceiveBannerItem[] = [
     {
       key: 'service-unavailable',
-      isVisible: retryAt !== null,
-      render: () => <ServiceUnavailableBanner retryAt={retryAt} />,
+      isVisible: secondsLeft !== null,
+      render: () => <ServiceUnavailableBanner secondsLeft={secondsLeft ?? 0} />,
     },
     {
       key: 'instance-disconnected',

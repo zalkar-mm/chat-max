@@ -64,7 +64,7 @@ describe('Ошибки получения', () => {
 
     expect(screen.getByText(DISCONNECTED_TEXT)).toBeInTheDocument()
     const button = screen.getByRole('button', { name: 'Проверяем…' })
-    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-disabled', 'true')
     expect(button).toHaveAttribute('aria-busy', 'true')
     expect(screen.queryByRole('button', { name: 'Проверить снова' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Открыть личный кабинет' })).toHaveAttribute(

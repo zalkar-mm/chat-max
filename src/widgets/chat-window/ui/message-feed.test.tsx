@@ -47,7 +47,7 @@ describe('MessageFeed — кнопка «↓ Новые сообщения»', (
     receive('in-1', 'Первое')
     expect(scrollTo).not.toHaveBeenCalled()
     expect(
-      screen.getByRole('button', { name: '1 новых сообщения, прокрутить вниз' }),
+      screen.getByRole('button', { name: '1 новое сообщение, прокрутить вниз' }),
     ).toBeInTheDocument()
 
     receive('in-2', 'Второе')

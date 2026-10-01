@@ -225,6 +225,20 @@ describe('Спринт 3 — получение сообщений', () => {
     ).toBeInTheDocument()
   })
 
+  it('задача 7.3: 466 из очереди → тот же жёлтый баннер лимита', async () => {
+    server.use(
+      http.get(
+        '*/waInstance:id/receiveNotification/:token',
+        () => new HttpResponse(null, { status: 466 }),
+      ),
+    )
+    await renderSignedInApp()
+    expect(
+      await screen.findByText(/Лимит бесплатного тарифа GREEN-API исчерпан/),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Сервис GREEN-API недоступен/)).not.toBeInTheDocument()
+  })
+
   it('задача 7.1: Webhook URL в настройках → баннер, получение не запускается', async () => {
     let receives = 0
     server.events.on('request:start', ({ request }) => {

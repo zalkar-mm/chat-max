@@ -19,6 +19,7 @@ const echo = (idMessage: string) =>
     source: 'api',
     idMessage,
     chatId: 'c',
+    name: null,
     text: 'Привет',
     content: 'text',
     sentAt: 1,

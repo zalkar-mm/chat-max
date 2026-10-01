@@ -1,9 +1,12 @@
 import { ArrowDown } from 'lucide-react'
 
+import { pluralize } from '@/shared/lib/plural'
 import { Gate } from '@/shared/ui/gate'
 import { IconButton } from '@/shared/ui/icon-button'
 
 const MAX_COUNT = 99
+
+const NEW_MESSAGE_FORMS = ['новое сообщение', 'новых сообщения', 'новых сообщений'] as const
 
 type NewMessagesButtonProps = {
   /** Новые сообщения с момента, как пользователь ушёл от низа ленты; 0 — без бейджа. */
@@ -15,7 +18,8 @@ type NewMessagesButtonProps = {
 export function NewMessagesButton({ count, onClick }: NewMessagesButtonProps) {
   const hasCount = count > 0
   const countLabel = count > MAX_COUNT ? `${MAX_COUNT}+` : String(count)
-  const label = hasCount ? `${countLabel} новых сообщения, прокрутить вниз` : 'Прокрутить вниз'
+  const countText = `${countLabel} ${pluralize(count, NEW_MESSAGE_FORMS)}`
+  const label = hasCount ? `${countText}, прокрутить вниз` : 'Прокрутить вниз'
 
   return (
     <IconButton

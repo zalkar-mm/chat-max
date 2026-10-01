@@ -27,6 +27,8 @@ export type NotificationPollerDeps = {
   onRecovered: () => void
   /** Креды больше не действуют: цикл остановлен, сессию надо завершить. */
   onUnauthorized: () => void
+  /** 466 — лимит тарифа: не сбой сервера, цикл продолжает работу. */
+  onQuotaExceeded: () => void
   /** Ошибка обработчика — только для логов разработки. */
   onHandleError?: (error: unknown) => void
 }
@@ -56,6 +58,8 @@ export function createNotificationPoller(deps: NotificationPollerDeps): Notifica
   let removeController: AbortController | null = null
   let wakeUp: (() => void) | null = null
   let failures = 0
+  /** Текущий цикл: новый start ждёт, пока старый дообработает и удалит своё событие. */
+  let loopPromise: Promise<void> = Promise.resolve()
 
   const sleep = (ms: number) =>
     new Promise<void>((resolve) => {
@@ -70,16 +74,17 @@ export function createNotificationPoller(deps: NotificationPollerDeps): Notifica
 
   async function removeNotification(receiptId: number, isCurrent: () => boolean) {
     for (let attempt = 0; attempt <= DELETE_RETRIES; attempt += 1) {
-      removeController = new AbortController()
+      const controller = new AbortController()
+      removeController = controller
       try {
-        await deps.remove(receiptId, removeController.signal)
+        await deps.remove(receiptId, controller.signal)
         return
       } catch (error) {
         if (toApiError(error).kind === ApiErrorKind.Aborted || !isCurrent()) return
         await sleep(DELETE_RETRY_DELAY_MS)
         if (!isCurrent()) return
       } finally {
-        removeController = null
+        if (removeController === controller) removeController = null
       }
     }
   }
@@ -87,10 +92,11 @@ export function createNotificationPoller(deps: NotificationPollerDeps): Notifica
   async function loop(run: number) {
     const isCurrent = () => isRunning && generation === run
     while (isCurrent()) {
-      receiveController = new AbortController()
+      const controller = new AbortController()
+      receiveController = controller
       let notification: RawNotification | null
       try {
-        notification = await deps.receive(receiveController.signal)
+        notification = await deps.receive(controller.signal)
       } catch (error) {
         const { kind } = toApiError(error)
         if (kind === ApiErrorKind.Aborted || !isCurrent()) return
@@ -99,14 +105,17 @@ export function createNotificationPoller(deps: NotificationPollerDeps): Notifica
           deps.onUnauthorized()
           return
         }
+        if (kind === ApiErrorKind.QuotaExceeded) deps.onQuotaExceeded()
         failures += 1
         const retryInMs = backoffFor(failures)
         deps.onFailure({ failures, retryInMs, kind })
         await sleep(retryInMs)
         continue
       } finally {
-        receiveController = null
+        if (receiveController === controller) receiveController = null
       }
+      // Остановлен (выход), пока ответ был в пути: событие не обрабатываем — данные сессии уже очищены.
+      if (generation !== run) return
 
       if (failures > 0) {
         failures = 0
@@ -129,7 +138,8 @@ export function createNotificationPoller(deps: NotificationPollerDeps): Notifica
       if (isRunning) return
       isRunning = true
       generation += 1
-      void loop(generation)
+      const run = generation
+      loopPromise = loopPromise.then(() => (generation === run ? loop(run) : undefined))
     },
     pause: () => {
       isRunning = false

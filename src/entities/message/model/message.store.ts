@@ -29,6 +29,24 @@ export const useMessageStore = create<MessageState>()(() => INITIAL)
 
 const ACK_RANK: Readonly<Record<DeliveryAck, number>> = { sent: 1, delivered: 2, read: 3 }
 
+/**
+ * Буфер ранних статусов ограничен: статусы чужих отправок (до входа, из другого клиента) никогда не найдут
+ * своё сообщение. Самые старые вытесняются — объект хранит порядок вставки.
+ */
+const MAX_PENDING_UPDATES = 200
+
+function withPendingUpdate(
+  pending: Record<string, DeliveryUpdate>,
+  idMessage: string,
+  update: DeliveryUpdate,
+) {
+  const next = { ...pending, [idMessage]: update }
+  const overflow = Object.keys(next).length - MAX_PENDING_UPDATES
+  if (overflow <= 0) return next
+  for (const key of Object.keys(next).slice(0, overflow)) delete next[key]
+  return next
+}
+
 function appendMessage(state: MessageState, message: Message, idMessage: string | null) {
   return {
     byId: { ...state.byId, [message.id]: message },
@@ -136,7 +154,9 @@ export function applyDeliveryUpdate(idMessage: string, update: DeliveryUpdate) {
   const id = state.idByApiId[idMessage]
   const message = id === undefined ? undefined : state.byId[id]
   if (id === undefined || message === undefined) {
-    useMessageStore.setState({ pendingUpdates: { ...state.pendingUpdates, [idMessage]: update } })
+    useMessageStore.setState({
+      pendingUpdates: withPendingUpdate(state.pendingUpdates, idMessage, update),
+    })
     return
   }
   if (message.direction !== 'outgoing') return

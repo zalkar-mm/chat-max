@@ -111,7 +111,7 @@ function parseMessage(body: unknown): NotificationEvent | null {
     }
   }
   const source = typeWebhook === 'outgoingAPIMessageReceived' ? 'api' : 'phone'
-  return { kind: 'outgoingMessage', source, ...base }
+  return { kind: 'outgoingMessage', source, ...base, name: nonEmpty(senderData.chatName) }
 }
 
 /**
