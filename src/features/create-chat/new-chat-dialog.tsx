@@ -13,11 +13,10 @@ const handleOpenChange = (isOpen: boolean) => {
   if (!isOpen) closeNewChatDialog()
 }
 
+// Фокусом после закрытия управляем сами: на инициатор после отмены, в открытый чат — после создания.
 const handleCloseAutoFocus = (event: Event) => {
-  const target = takeReturnFocusTarget()
-  if (!target) return
   event.preventDefault()
-  target.focus()
+  takeReturnFocusTarget()?.focus()
 }
 
 function NewChatDialogBody() {

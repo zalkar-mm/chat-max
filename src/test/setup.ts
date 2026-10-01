@@ -41,6 +41,7 @@ beforeAll(() => {
 afterEach(() => {
   cleanup()
   server.resetHandlers()
+  server.events.removeAllListeners()
   resetScenarios()
   sessionStorage.clear()
   localStorage.clear()

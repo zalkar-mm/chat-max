@@ -46,7 +46,8 @@ describe('MessageBubble', () => {
     [incoming('привет'), '14:05'],
   ])('подписывает мету времени и статуса: %#', (message, label) => {
     render(<MessageBubble message={message} isLastInGroup={false} />)
-    expect(screen.getByLabelText(label)).toBeInTheDocument()
+    const time = screen.getByText('14:05')
+    expect(time.parentElement?.textContent).toBe(label)
   })
 
   it('рендерит footer и aside', () => {

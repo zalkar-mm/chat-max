@@ -15,10 +15,11 @@ export function useSignOut() {
 
   return () => {
     void queryClient.cancelQueries()
+    // Сначала конец сессии — он останавливает фоновые процессы (очередь отправки), потом данные.
+    useSessionStore.getState().endSession()
     queryClient.clear()
     clearMessages()
     clearChats()
-    useSessionStore.getState().endSession()
     void navigate(ROUTES.SIGN_IN, { replace: true })
   }
 }

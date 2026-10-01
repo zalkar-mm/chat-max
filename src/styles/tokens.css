@@ -291,3 +291,27 @@
 :root {
   --chat-content-max-w: 791px;
 }
+
+/* ---- Sprint 3 additions: read status, new-messages FAB, unsupported bubble ---- */
+:root {
+  --fab-size: 40px;
+  --fab-offset: 16px;
+  --new-msgs-threshold: 100px;
+}
+:root,
+:root[data-theme='light'] {
+  --bubble-out-status-read: #fff; /* две галочки «прочитано» — белые 100% на синем */
+  --bubble-in-status-read: #007aff; /* на случай статусов во входящих — не используем */
+  --bubble-unsupported-fg-in: #06070885;
+  --bubble-unsupported-fg-out: #ffffffa3;
+  --fab-badge-bg: #007aff;
+  --fab-badge-fg: #fff;
+}
+:root[data-theme='dark'] {
+  --bubble-out-status-read: #fff;
+  --bubble-in-status-read: #007aff;
+  --bubble-unsupported-fg-in: #ffffff85;
+  --bubble-unsupported-fg-out: #ffffffa3;
+  --fab-badge-bg: #007aff;
+  --fab-badge-fg: #fff;
+}

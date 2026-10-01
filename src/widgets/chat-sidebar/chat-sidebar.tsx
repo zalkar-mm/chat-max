@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef } from 'react'
+
 import { NewChatIconButton, StartNewChatButton } from '@/features/create-chat/new-chat-buttons'
 import { SignOutButton } from '@/features/sign-out/sign-out-button'
 import { ThemeToggle } from '@/features/toggle-theme/theme-toggle'
@@ -13,6 +15,8 @@ import { SidebarHeader } from './ui/sidebar-header'
 
 type ChatSidebarProps = {
   selectedChatId: string | null
+  /** На mobile при открытом чате список скрыт (display: none) — браузер при этом сбрасывает прокрутку. */
+  isHidden: boolean
   className?: string
 }
 
@@ -37,8 +41,27 @@ function ChatList({ selectedChatId }: ChatListProps) {
   )
 }
 
-export function ChatSidebar({ selectedChatId, className }: ChatSidebarProps) {
+/** Запоминает прокрутку списка и возвращает её, когда список снова показан («Назад» на mobile). */
+function useScrollRestoration(isHidden: boolean) {
+  const listRef = useRef<HTMLElement>(null)
+  const savedScrollTop = useRef(0)
+
+  useLayoutEffect(() => {
+    if (!isHidden && listRef.current) listRef.current.scrollTop = savedScrollTop.current
+  }, [isHidden])
+
+  // Сохраняем только видимую прокрутку: сброс в 0 при display: none запоминать нельзя.
+  const handleScroll = () => {
+    const list = listRef.current
+    if (list?.offsetParent) savedScrollTop.current = list.scrollTop
+  }
+
+  return { listRef, handleScroll }
+}
+
+export function ChatSidebar({ selectedChatId, isHidden, className }: ChatSidebarProps) {
   const idInstance = useSessionIdInstance() ?? ''
+  const { listRef, handleScroll } = useScrollRestoration(isHidden)
 
   return (
     <aside className={className}>
@@ -52,7 +75,12 @@ export function ChatSidebar({ selectedChatId, className }: ChatSidebarProps) {
           </>
         }
       />
-      <nav className="min-h-0 flex-1 overflow-y-auto p-2" aria-label="Список чатов">
+      <nav
+        ref={listRef}
+        className="min-h-0 flex-1 overflow-y-auto p-2"
+        aria-label="Список чатов"
+        onScroll={handleScroll}
+      >
         <ChatList selectedChatId={selectedChatId} />
       </nav>
     </aside>

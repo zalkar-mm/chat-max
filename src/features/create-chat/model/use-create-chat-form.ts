@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 
@@ -67,8 +67,13 @@ export function useCreateChatForm() {
   })
   const isChecking = lookup.isPending
 
+  // Поле на время проверки неактивно и теряет фокус — после ответа с ошибкой возвращаем его в поле.
+  useEffect(() => {
+    if (failure !== null && !isChecking) form.setFocus('phone')
+  }, [failure, isChecking, form])
+
   const handleSubmit = form.handleSubmit(({ phone }) => {
-    if (isChecking) return
+    if (lookup.isPending) return
     const digits = normalizePhone(phone)
     const existingChatId = findChatIdByPhone(digits)
     if (existingChatId !== null) {

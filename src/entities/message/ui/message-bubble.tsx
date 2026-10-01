@@ -67,7 +67,8 @@ export function MessageBubble({ message, isLastInGroup, footer, aside }: Message
   const metaKind = toMetaKind(message)
   const time = formatMessageTime(message.createdAt)
   const statusLabel = STATUS_LABEL[metaKind]
-  const metaLabel = statusLabel === null ? time : `${time}, ${statusLabel}`
+  // Скринридер читает «14:05, отправлено»: время видимое, статус — только для него.
+  const statusSuffix = statusLabel === null ? '' : `, ${statusLabel}`
   const isFailed = metaKind === 'failed'
 
   const rowCn = cn('flex', ROW_CN[direction])
@@ -92,9 +93,10 @@ export function MessageBubble({ message, isLastInGroup, footer, aside }: Message
             <span className="typo-body whitespace-pre-wrap [overflow-wrap:anywhere]">
               {message.text}
             </span>
-            <span className={metaCn} aria-label={metaLabel}>
-              <span aria-hidden>{time}</span>
+            <span className={metaCn}>
+              <span>{time}</span>
               {STATUS_ICON[metaKind]}
+              <span className="sr-only">{statusSuffix}</span>
             </span>
           </div>
         </div>

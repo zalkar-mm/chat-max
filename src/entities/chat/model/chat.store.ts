@@ -75,17 +75,18 @@ export function getChat(chatId: ChatId): Chat | null {
   return useChatStore.getState().byId[chatId] ?? null
 }
 
-/** Свежие сверху; при равной активности — созданный позже. */
-function compareByActivity(left: Chat, right: Chat) {
-  return right.lastActivityAt - left.lastActivityAt || right.createdAt - left.createdAt
-}
-
+/** Свежие сверху; при равной активности — созданный позже (а при равном времени — добавленный позже). */
 function selectSortedChatIds(state: ChatState): ChatId[] {
   return state.ids
-    .map((id) => state.byId[id])
-    .filter((chat) => chat !== undefined)
-    .sort(compareByActivity)
-    .map((chat) => chat.id)
+    .map((id, index) => ({ chat: state.byId[id], index }))
+    .filter((entry): entry is { chat: Chat; index: number } => entry.chat !== undefined)
+    .sort(
+      (left, right) =>
+        right.chat.lastActivityAt - left.chat.lastActivityAt ||
+        right.chat.createdAt - left.chat.createdAt ||
+        right.index - left.index,
+    )
+    .map((entry) => entry.chat.id)
 }
 
 export const useChat = (chatId: ChatId) => useChatStore((state) => state.byId[chatId] ?? null)

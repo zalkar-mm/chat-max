@@ -39,14 +39,19 @@ function FeedRow({ row }: FeedRowProps) {
   )
 }
 
-function EmptyFeed() {
-  return (
-    <div className="flex h-full items-center justify-center p-4">
-      <p className="rounded-full bg-date-pill px-4 py-2 typo-detail text-secondary">
+type FeedContentProps = {
+  rows: readonly MessageRow[]
+}
+
+function FeedContent({ rows }: FeedContentProps) {
+  if (rows.length === 0) {
+    return (
+      <p className="m-auto rounded-full bg-date-pill px-4 py-2 typo-detail text-secondary">
         Напишите первое сообщение
       </p>
-    </div>
-  )
+    )
+  }
+  return rows.map((row) => <FeedRow key={row.key} row={row} />)
 }
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -72,22 +77,19 @@ export function MessageFeed({ chatId }: MessageFeedProps) {
     feed.scrollTo({ top: feed.scrollHeight, behavior })
   }, [lastOutgoingId])
 
-  if (messages.length === 0) return <EmptyFeed />
-
   const rows = buildMessageRows(messages, now)
 
+  // Регион лога смонтирован и для пустого чата: первое сообщение объявляется скринридером.
   return (
-    <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+    <div ref={scrollRef} className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       <div
-        className="mx-auto max-w-(--chat-content-max-w) px-3 pt-3 pb-2 md:px-4 md:pt-4"
+        className="mx-auto flex w-full max-w-(--chat-content-max-w) flex-1 flex-col px-3 pt-3 pb-2 md:px-4 md:pt-4"
         role="log"
         aria-live="polite"
         aria-relevant="additions"
         aria-label="Сообщения"
       >
-        {rows.map((row) => (
-          <FeedRow key={row.key} row={row} />
-        ))}
+        <FeedContent rows={rows} />
       </div>
     </div>
   )
