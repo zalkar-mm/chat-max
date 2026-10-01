@@ -29,7 +29,7 @@ export function Composer({ model, textareaRef }: ComposerProps) {
   const isTextareaDisabled = !isInstanceReady
 
   return (
-    <div className="shrink-0 border-t border-divider-soft bg-primary px-2 pt-2 pb-[max(8px,env(safe-area-inset-bottom))] md:px-4">
+    <div className="shrink-0 border-t border-divider-soft bg-primary px-2 pt-2 pb-[calc(var(--s-8)+env(safe-area-inset-bottom))] md:px-4">
       <div className="mx-auto max-w-(--chat-content-max-w)">
         <div className="mb-1 flex items-center justify-between gap-2 empty:hidden">
           <p id={LIMIT_ERROR_ID} role="alert" className="typo-description text-negative-strong">
@@ -50,7 +50,7 @@ export function Composer({ model, textareaRef }: ComposerProps) {
             invalid={isOverLimit}
             disabled={isTextareaDisabled}
             // Длинный плейсхолдер неактивного поля на узком экране не влезает в строку — даём ему две.
-            className="min-h-10 overflow-y-auto max-md:disabled:placeholder-shown:min-h-16"
+            className="max-h-(--composer-textarea-max-h) min-h-10 overflow-y-auto max-md:disabled:placeholder-shown:min-h-16 phone-landscape:max-h-20"
             onChange={model.onChange}
             onKeyDown={model.onKeyDown}
           />

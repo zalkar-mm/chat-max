@@ -27,13 +27,13 @@ type LastMessageStatusProps = {
 
 function LastMessageStatus({ status }: LastMessageStatusProps) {
   if (status === null) return null
-  const { Icon, className, label } = STATUS_VIEW[status]
+  // Подпись статуса — в доступном имени ячейки.
+  const { Icon, className } = STATUS_VIEW[status]
   const iconCn = cn('size-4', className)
 
   return (
     <span className="ml-2 flex size-5 shrink-0 items-center justify-center">
       <Icon className={iconCn} aria-hidden />
-      <span className="sr-only">{label}</span>
     </span>
   )
 }
@@ -67,13 +67,21 @@ export function ChatListItem({
   const hasTime = time !== null
   const unreadLabel = unreadCount > MAX_UNREAD ? `${MAX_UNREAD}+` : String(unreadCount)
   const ariaCurrent = isSelected ? 'true' : undefined
-  // Без непрочитанных доступное имя берётся из содержимого (название, превью, время).
-  const ariaLabel = hasUnread ? `${title}, ${unreadLabel} непрочитанных` : undefined
+  // DS §3: «Анна, Привет!, 14:05, 2 непрочитанных, прочитано» — пустые части пропускаются.
+  const ariaLabel = [
+    title,
+    preview ?? 'Нет сообщений',
+    time,
+    hasUnread ? `${unreadLabel} непрочитанных` : null,
+    status === null || hasUnread ? null : STATUS_VIEW[status].label,
+  ]
+    .filter((part) => part !== null)
+    .join(', ')
 
   const rootCn = cn(
-    'flex h-18 min-w-0 items-center gap-3 rounded-l px-4 py-3',
+    'flex h-18 min-w-0 items-center gap-3 rounded-l px-4 py-3 narrow:px-3 phone-landscape:h-16',
     'transition-colors duration-120 ease-out hover:bg-cell-hover active:bg-cell-pressed',
-    'focus-visible:-outline-offset-2',
+    'focus-ring-inset',
     isSelected && 'md:bg-cell-selected',
   )
   const titleCn = cn(
@@ -114,7 +122,7 @@ export function ChatListItem({
             <span className="min-w-0 flex-1 truncate typo-detail text-secondary">{preview}</span>
           </Gate>
           <Gate when={hasUnread} fallback={<LastMessageStatus status={status} />}>
-            <span className="ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-counter px-1.5 typo-label font-medium text-counter tabular-nums">
+            <span className="ml-2 flex h-5 min-w-5 shrink-0 animate-pop items-center justify-center rounded-full bg-counter px-1.5 typo-label font-medium text-counter tabular-nums">
               {unreadLabel}
             </span>
           </Gate>

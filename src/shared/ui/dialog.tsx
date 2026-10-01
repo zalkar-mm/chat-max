@@ -39,8 +39,8 @@ export function DialogContent({
   hideCloseButton = false,
 }: DialogContentProps) {
   const contentCn = cn(
-    'fixed inset-0 z-50 flex h-dvh w-full flex-col overflow-y-auto bg-primary px-4 pb-4 focus:outline-none',
-    'md:inset-auto md:top-1/2 md:left-1/2 md:h-auto md:max-w-(--auth-card-w) md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl md:bg-modal md:p-6 md:shadow-modal',
+    'fixed inset-0 z-50 flex h-dvh w-full animate-sheet-in flex-col overflow-y-auto bg-primary px-4 pt-[env(safe-area-inset-top)] focus:outline-none',
+    'md:inset-auto md:animate-modal-in md:top-1/2 md:left-1/2 md:h-auto md:max-w-(--auth-card-w) md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl md:bg-modal md:p-6 md:shadow-modal',
     className,
   )
 
@@ -48,7 +48,7 @@ export function DialogContent({
 
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-overlay" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade-in bg-overlay" />
       <DialogPrimitive.Content
         className={contentCn}
         onEscapeKeyDown={onEscapeKeyDown}

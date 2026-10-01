@@ -62,7 +62,7 @@ import { messageSchema } from '@/entities/message/model/message.schema' // ❌ �
 import { useState } from 'react' // 1. react
 
 import { useMutation } from '@tanstack/react-query' // 2. внешние пакеты
-import { z } from 'zod'
+import { z } from 'zod/mini'
 
 import { ROUTES } from '@/shared/consts/routes' // 3. слои: app → … → shared
 

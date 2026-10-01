@@ -20,7 +20,7 @@ export function ChatHeader({ chatId, title, name, phone, onBack }: ChatHeaderPro
   const subtitle = phone === null ? '' : formatPhone(phone)
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-divider-soft bg-primary pr-4 pl-1 md:pl-4">
+    <header className="flex h-[calc(var(--s-56)+env(safe-area-inset-top))] shrink-0 items-center gap-3 border-b border-divider-soft bg-primary pt-[env(safe-area-inset-top)] pr-4 pl-1 narrow:pr-3 md:pl-4 phone-landscape:h-12">
       <IconButton label="Назад к списку" className="md:hidden" onClick={onBack}>
         <ArrowLeft aria-hidden />
       </IconButton>

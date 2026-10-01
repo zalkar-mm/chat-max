@@ -38,7 +38,7 @@ export function Checkbox({
         onCheckedChange={handleCheckedChange}
         disabled={disabled}
         aria-describedby={describedBy}
-        className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-checkbox border-[1.5px] border-checkbox bg-transparent text-white transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 data-[state=checked]:border-accent data-[state=checked]:bg-accent"
+        className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-checkbox border-[1.5px] border-checkbox bg-transparent text-white transition-colors hover:border-accent disabled:cursor-not-allowed disabled:opacity-60 data-[state=checked]:border-accent data-[state=checked]:bg-accent"
       >
         <CheckboxPrimitive.Indicator>
           <Check className="size-3.5" strokeWidth={3} aria-hidden />

@@ -39,7 +39,7 @@ describe('Вход — пограничные случаи', () => {
     storeSession('3100000001')
     // StrictMode монтирует гейт дважды: первый запрос восстановления отменяется, но ответ уже съеден.
     respondWithStates('starting', 'starting', 'starting', 'authorized')
-    renderApp()
+    await renderApp()
 
     expect(await screen.findByRole('heading', { name: 'Инстанс запускается' })).toBeInTheDocument()
     await act(() => vi.advanceTimersByTimeAsync(10_000))
@@ -52,7 +52,7 @@ describe('Вход — пограничные случаи', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     storeSession('3100000001')
     respondWithStates('starting')
-    renderApp()
+    await renderApp()
     await screen.findByRole('heading', { name: 'Инстанс запускается' })
 
     server.use(
@@ -69,7 +69,7 @@ describe('Вход — пограничные случаи', () => {
 
   it('ошибка «Проверить снова» показывается на экране статуса, контекст не теряется', async () => {
     storeSession('3100000003')
-    const { user } = renderApp()
+    const { user } = await renderApp()
     await screen.findByRole('heading', { name: 'Инстанс не подключён к MAX' })
 
     server.use(
@@ -86,7 +86,7 @@ describe('Вход — пограничные случаи', () => {
   })
 
   it('5xx на входе → «Сервис GREEN-API недоступен»', async () => {
-    const { user } = renderApp({ path: '/sign-in' })
+    const { user } = await renderApp({ path: '/sign-in' })
     await user.type(screen.getByLabelText('idInstance'), '3100000050')
     await user.type(screen.getByLabelText('apiTokenInstance'), 'token{Enter}')
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -96,7 +96,7 @@ describe('Вход — пограничные случаи', () => {
 
   it('5xx при старте → экран «Нет соединения» с текстом ошибки, данные не удалены', async () => {
     storeSession('3100000050')
-    renderApp()
+    await renderApp()
     expect(await screen.findByRole('heading', { name: 'Нет соединения' })).toBeInTheDocument()
     expect(screen.getByText('Сервис GREEN-API недоступен. Попробуйте позже')).toBeInTheDocument()
     expect(sessionStorage.getItem(STORAGE_KEY)).not.toBeNull()
@@ -113,12 +113,12 @@ describe('Вход — пограничные случаи', () => {
       removeListener: () => undefined,
       dispatchEvent: () => false,
     }))
-    renderApp({ path: '/sign-in' })
+    await renderApp({ path: '/sign-in' })
     expect(await screen.findByLabelText('idInstance')).toHaveFocus()
   })
 
   it('на mobile фокус в поле не ставится', async () => {
-    renderApp({ path: '/sign-in' })
+    await renderApp({ path: '/sign-in' })
     expect(await screen.findByLabelText('idInstance')).not.toHaveFocus()
   })
 
@@ -131,7 +131,7 @@ describe('Вход — пограничные случаи', () => {
         () => new Promise<Response>(() => undefined),
       ),
     )
-    renderApp()
+    await renderApp()
     expect(screen.queryByRole('status', { name: 'Загрузка' })).not.toBeInTheDocument()
     await act(() => vi.advanceTimersByTimeAsync(300))
     expect(screen.getByRole('status', { name: 'Загрузка' })).toBeInTheDocument()
@@ -145,7 +145,7 @@ describe('Вход — пограничные случаи', () => {
       })
     }
     storeSession('3100000050')
-    renderApp()
+    await renderApp()
     await screen.findByRole('heading', { name: 'Нет соединения' })
 
     expect(document.body.innerHTML).not.toContain(TOKEN)

@@ -80,7 +80,7 @@ export function CreateChatForm({ model, onCancel }: CreateChatFormProps) {
         <ErrorMessage fieldError={fieldError} failure={failureText} />
       </p>
 
-      <div className="mt-auto flex gap-2 pt-6 pb-[max(16px,env(safe-area-inset-bottom))] md:mt-0 md:pb-0">
+      <div className="sticky bottom-0 mt-auto flex gap-2 bg-primary pt-6 pb-[calc(var(--s-16)+env(safe-area-inset-bottom))] md:static md:mt-0 md:bg-transparent md:pb-0">
         <Button
           variant="secondary"
           className="hidden flex-1 md:inline-flex"

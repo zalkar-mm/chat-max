@@ -2,12 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [main]
   pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,5 +19,54 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run check
-      - run: npm run build
+
+      # Креды GREEN-API в репозитории — сразу красный CI (sprint-4, задача 6).
+      - name: Secret scan
+        run: npm run check:secrets
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Format
+        run: npm run format:check
+      - name: UI copy is up to date
+        run: npm run copy:check
+
+      - name: Unit and component tests with coverage
+        run: npm run test:coverage
+      - name: Coverage summary
+        if: always()
+        run: |
+          node -e '
+            const fs = require("node:fs")
+            const file = "coverage/coverage-summary.json"
+            if (!fs.existsSync(file)) process.exit(0)
+            const { total } = JSON.parse(fs.readFileSync(file, "utf8"))
+            const rows = ["lines", "statements", "functions", "branches"]
+              .map((key) => `| ${key} | ${total[key].pct}% | ${total[key].covered}/${total[key].total} |`)
+            const table = ["### Покрытие доменной логики и API", "", "| Метрика | % | Покрыто |", "| --- | --- | --- |", ...rows].join("\n")
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, table + "\n")
+          '
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: ignore
+
+      - name: Build
+        run: npm run build
+
+      # e2e на моке API (MSW): живой инстанс в CI не используется.
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: E2E
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore

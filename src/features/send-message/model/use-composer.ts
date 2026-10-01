@@ -18,9 +18,6 @@ import { sendMessage } from './send-queue'
 
 export const COUNTER_THRESHOLD = 3800
 
-// 6 строк × 20 + вертикальные паддинги 20 — `--composer-textarea-max-h` из токенов.
-const TEXTAREA_MAX_HEIGHT = 140
-
 export function useComposer(chatId: string, textareaRef: RefObject<HTMLTextAreaElement | null>) {
   const text = useChatDraft(chatId)
   const instanceState = useInstanceState()
@@ -38,7 +35,8 @@ export function useComposer(chatId: string, textareaRef: RefObject<HTMLTextAreaE
     const textarea = textareaRef.current
     if (!textarea) return
     textarea.style.height = 'auto'
-    textarea.style.height = `${Math.min(textarea.scrollHeight, TEXTAREA_MAX_HEIGHT)}px`
+    // Предел высоты (6 строк, в альбомной — 3) задаёт CSS поля ввода.
+    textarea.style.height = `${textarea.scrollHeight}px`
   }, [text, textareaRef])
 
   // Автофокус при открытии чата — только desktop: на мобильном не выбрасываем клавиатуру.

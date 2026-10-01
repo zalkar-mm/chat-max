@@ -1,4 +1,4 @@
-import { act, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -18,7 +18,7 @@ const openChat = async (phone = '79991234567') => {
 // Подпись статуса для скринридера; «, отправлено» целиком — не путать с «, не отправлено».
 const SENT = ', отправлено'
 
-const feed = () => screen.getByRole('log', { name: 'Сообщения' })
+const feed = () => screen.getByRole('log', { name: /^Сообщения с / })
 
 const sendRequests = () => {
   const bodies: unknown[] = []
@@ -76,6 +76,23 @@ describe('Спринт 2, задача 5 — поле ввода', () => {
     expect(bodies).toEqual([])
   })
 
+  it('Enter во время IME-ввода подтверждает слово и не отправляет сообщение', async () => {
+    const bodies = sendRequests()
+    const { user, composer } = await openChat()
+    await user.type(composer, 'привет')
+
+    fireEvent.keyDown(composer, { key: 'Enter', isComposing: true })
+    // Safari подтверждает IME Enter-ом с isComposing: false, но keyCode 229.
+    fireEvent.keyDown(composer, { key: 'Enter', keyCode: 229 })
+
+    expect(composer).toHaveValue('привет')
+    expect(bodies).toEqual([])
+
+    fireEvent.keyDown(composer, { key: 'Enter' })
+    expect(await within(feed()).findByText('привет')).toBeInTheDocument()
+    expect(composer).toHaveValue('')
+  })
+
   it('4–5: счётчик с 3800 символов; 4001 → «Максимум 4000 символов», отправка невозможна', async () => {
     const { user, composer, sendButton } = await openChat()
     await user.click(composer)
@@ -103,7 +120,7 @@ describe('Спринт 2, задача 5 — поле ввода', () => {
     await user.type(composer, 'черновик')
     await createChatViaForm(user, '79997654321')
     expect(screen.getByRole('textbox', { name: 'Сообщение' })).toHaveValue('')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     await user.click(within(list).getByRole('button', { name: /\+7 999 123-45-67/ }))
     expect(screen.getByRole('textbox', { name: 'Сообщение' })).toHaveValue('черновик')
   })
@@ -202,7 +219,7 @@ describe('Спринт 2, задача 3 — список чатов', () => {
     await createChatViaForm(view.user, '79991111111')
     await createChatViaForm(view.user, '79992222222')
     await createChatViaForm(view.user, '79993333333')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     const titles = () =>
       within(list)
         .getAllByRole('button')
@@ -223,7 +240,7 @@ describe('Спринт 2, задача 3 — список чатов', () => {
     const view = await renderSignedInApp()
     await createChatViaForm(view.user, '79991111111')
     await createChatViaForm(view.user, '79992222222')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     within(list)
       .getByRole('button', { name: /\+7 999 111-11-11/ })
       .focus()
@@ -236,13 +253,13 @@ describe('Спринт 2, задача 3 — список чатов', () => {
     await createChatViaForm(view.user, '79991111111')
     await view.user.click(screen.getByRole('button', { name: 'Назад к списку' }))
     expect(view.router.state.location.pathname).toBe('/')
-    expect(screen.getByRole('navigation', { name: 'Список чатов' })).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Чаты' })).toBeInTheDocument()
   })
 
   it('4: активный чат подсвечен', async () => {
     const view = await renderSignedInApp()
     await createChatViaForm(view.user, '79991111111')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     expect(within(list).getByRole('button', { name: /\+7 999 111-11-11/ })).toHaveAttribute(
       'aria-current',
       'true',

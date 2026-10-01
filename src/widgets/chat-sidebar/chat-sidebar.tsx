@@ -64,7 +64,7 @@ export function ChatSidebar({ selectedChatId, isHidden, className }: ChatSidebar
   const { listRef, handleScroll } = useScrollRestoration(isHidden)
 
   return (
-    <aside className={className}>
+    <div className={className}>
       <SidebarHeader
         subtitle={idInstance}
         actions={
@@ -75,14 +75,17 @@ export function ChatSidebar({ selectedChatId, isHidden, className }: ChatSidebar
           </>
         }
       />
+      {/* id и tabIndex — цель ссылки «Перейти к сообщениям», пока чат не открыт. */}
       <nav
         ref={listRef}
+        id="chat-list"
+        tabIndex={-1}
         className="min-h-0 flex-1 overflow-y-auto p-2"
-        aria-label="Список чатов"
+        aria-label="Чаты"
         onScroll={handleScroll}
       >
         <ChatList selectedChatId={selectedChatId} />
       </nav>
-    </aside>
+    </div>
   )
 }

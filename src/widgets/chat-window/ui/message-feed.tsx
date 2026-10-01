@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import {
   MessageSendFailure,
@@ -19,14 +19,18 @@ import { NewMessagesButton } from './new-messages-button'
 
 type MessageFeedProps = {
   chatId: string
+  /** Название чата: подпись ленты и автор входящих для скринридера. */
+  title: string
 }
 
 type FeedRowProps = {
   row: MessageRow
+  senderLabel: string
+  isNew: boolean
 }
 
 // Отступы по спеке: 2px внутри группы одного автора, 8px между авторами; вокруг разделителя дня — свои 16px.
-function FeedRow({ row }: FeedRowProps) {
+function FeedRowView({ row, senderLabel, isNew }: FeedRowProps) {
   if (row.kind === 'day') return <DayDivider label={row.label} />
 
   const rowCn = cn(row.isFirstInGroup ? 'mt-2' : 'mt-0.5')
@@ -36,6 +40,8 @@ function FeedRow({ row }: FeedRowProps) {
       <MessageBubble
         message={row.message}
         isLastInGroup={row.isLastInGroup}
+        senderLabel={senderLabel}
+        isNew={isNew}
         aside={<MessageSendFailureIcon message={row.message} />}
         footer={<MessageSendFailure message={row.message} />}
       />
@@ -43,11 +49,33 @@ function FeedRow({ row }: FeedRowProps) {
   )
 }
 
-type FeedContentProps = {
-  rows: readonly MessageRow[]
+const isSameRow = (a: MessageRow, b: MessageRow) => {
+  if (a.kind === 'day') return b.kind === 'day' && a.label === b.label
+  if (b.kind === 'day') return false
+  return (
+    a.message === b.message &&
+    a.isFirstInGroup === b.isFirstInGroup &&
+    a.isLastInGroup === b.isLastInGroup
+  )
 }
 
-function FeedContent({ rows }: FeedContentProps) {
+// Строки пересобираются на каждое сообщение; перерисовываются только изменившиеся (длинные чаты, NFR-PERF).
+const FeedRow = memo(
+  FeedRowView,
+  (prev, next) =>
+    prev.senderLabel === next.senderLabel &&
+    prev.isNew === next.isNew &&
+    isSameRow(prev.row, next.row),
+)
+
+type FeedContentProps = {
+  rows: readonly MessageRow[]
+  senderLabel: string
+  /** Сообщения, которые уже были при открытии ленты: они не анимируются. */
+  initialIds: ReadonlySet<string>
+}
+
+function FeedContent({ rows, senderLabel, initialIds }: FeedContentProps) {
   if (rows.length === 0) {
     return (
       <p className="m-auto rounded-full bg-date-pill px-4 py-2 typo-detail text-secondary">
@@ -55,7 +83,32 @@ function FeedContent({ rows }: FeedContentProps) {
       </p>
     )
   }
-  return rows.map((row) => <FeedRow key={row.key} row={row} />)
+  // День — отдельный блок: липкий разделитель держится только в пределах своего дня
+  // и уезжает, когда подходит следующий, а не ложится поверх него.
+  return splitByDay(rows).map((day) => (
+    <div key={day.key}>
+      {day.rows.map((row) => (
+        <FeedRow
+          key={row.key}
+          row={row}
+          senderLabel={senderLabel}
+          isNew={!initialIds.has(row.key)}
+        />
+      ))}
+    </div>
+  ))
+}
+
+type DayRows = { key: string; rows: MessageRow[] }
+
+function splitByDay(rows: readonly MessageRow[]): DayRows[] {
+  const days: DayRows[] = []
+  for (const row of rows) {
+    const current = days.at(-1)
+    if (row.kind === 'day' || current === undefined) days.push({ key: row.key, rows: [row] })
+    else current.rows.push(row)
+  }
+  return days
 }
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -75,8 +128,9 @@ const scrollToBottom = (feed: HTMLElement) => {
 const countIncoming = (messages: readonly Message[]) =>
   messages.filter((message) => message.direction === 'incoming').length
 
-export function MessageFeed({ chatId }: MessageFeedProps) {
+export function MessageFeed({ chatId, title }: MessageFeedProps) {
   const messages = useChatMessages(chatId)
+  const [initialIds] = useState(() => new Set(messages.map((message) => message.id)))
   const now = useNow()
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastMessage = messages.at(-1)
@@ -102,16 +156,24 @@ export function MessageFeed({ chatId }: MessageFeedProps) {
     if (feed) feed.scrollTop = feed.scrollHeight
   }, [chatId])
 
-  // Лента сжалась (баннер сверху, клавиатура, многострочное поле): кто был внизу — остаётся внизу.
+  // Кто был внизу — остаётся внизу:
+  // - лента сжалась (баннер сверху, клавиатура, многострочное поле) — сразу, без анимации;
+  // - содержимое выросло без нового сообщения («Не отправлено. Повторить» под пузырём) — плавно.
   useEffect(() => {
     const feed = scrollRef.current
-    if (!feed || typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(() => {
+    const content = feed?.firstElementChild
+    if (!feed || !content || typeof ResizeObserver === 'undefined') return
+    const viewportObserver = new ResizeObserver(() => {
       if (!isAwayRef.current) feed.scrollTop = feed.scrollHeight
     })
-    observer.observe(feed)
+    const contentObserver = new ResizeObserver(() => {
+      if (!isAwayRef.current) scrollToBottom(feed)
+    })
+    viewportObserver.observe(feed)
+    contentObserver.observe(content)
     return () => {
-      observer.disconnect()
+      viewportObserver.disconnect()
+      contentObserver.disconnect()
     }
   }, [])
 
@@ -152,8 +214,11 @@ export function MessageFeed({ chatId }: MessageFeedProps) {
   // Регион лога смонтирован и для пустого чата: первое сообщение объявляется скринридером.
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
+      {/* id и tabIndex — цель ссылки «Перейти к сообщениям». */}
       <div
         ref={scrollRef}
+        id="messages"
+        tabIndex={-1}
         className="flex min-h-0 flex-1 flex-col overflow-y-auto"
         onScroll={handleScroll}
       >
@@ -162,9 +227,9 @@ export function MessageFeed({ chatId }: MessageFeedProps) {
           role="log"
           aria-live="polite"
           aria-relevant="additions"
-          aria-label="Сообщения"
+          aria-label={`Сообщения с ${title}`}
         >
-          <FeedContent rows={rows} />
+          <FeedContent rows={rows} senderLabel={title} initialIds={initialIds} />
         </div>
       </div>
       <Gate when={hasNewMessages}>

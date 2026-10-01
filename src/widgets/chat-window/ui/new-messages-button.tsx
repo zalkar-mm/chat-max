@@ -25,7 +25,7 @@ export function NewMessagesButton({ count, onClick }: NewMessagesButtonProps) {
     <IconButton
       label={label}
       title="Новые сообщения"
-      className="absolute right-3 bottom-4 rounded-full bg-scroll-fab text-icon-primary shadow-scroll-fab enabled:hover:bg-cell-hover enabled:active:scale-96 md:right-4"
+      className="absolute right-3 bottom-4 animate-appear-fast rounded-full bg-scroll-fab text-icon-primary shadow-scroll-fab enabled:hover:bg-cell-hover enabled:active:scale-96 md:right-4"
       onClick={onClick}
     >
       <ArrowDown aria-hidden />

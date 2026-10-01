@@ -10,14 +10,15 @@
 | Что                  | Чем                                                                                |
 | -------------------- | ---------------------------------------------------------------------------------- |
 | Сборка               | Vite 8, React 19, TypeScript 6 (strict)                                            |
-| Тесты                | Vitest, Testing Library, jsdom, MSW                                                |
+| Тесты                | Vitest (+ `@vitest/coverage-v8`), Testing Library, jsdom, MSW; e2e — Playwright    |
+| Git-хуки             | `simple-git-hooks` + `lint-staged` (pre-commit: ESLint, Prettier, поиск секретов)  |
 | Линтер / формат      | ESLint 9 flat config (`eslint.config.js`), Prettier                                |
 | Стили                | Tailwind CSS v4 поверх токенов `src/styles/tokens.css`, `cn`, `cva`                |
 | UI-примитивы         | свои в `shared/ui/` по дизайн-спеке, поведение — `radix-ui`, иконки `lucide-react` |
 | Запросы              | axios (один инстанс) + TanStack Query (мутации)                                    |
 | Клиентское состояние | Zustand (+ `persist` для кредов и темы)                                            |
 | Роутинг              | React Router v7 (data router)                                                      |
-| Формы                | react-hook-form + zod                                                              |
+| Формы                | react-hook-form + zod (`zod/mini` — вдвое меньше в бандле)                         |
 | Сбой рендера         | `errorElement` корневого роута React Router                                        |
 | Моки API             | MSW — тесты и dev-сценарии                                                         |
 

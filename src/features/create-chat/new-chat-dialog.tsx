@@ -1,52 +1,39 @@
-import { Dialog, DialogContent } from '@/shared/ui/dialog'
+import { lazy, Suspense, useEffect } from 'react'
+
+import { Dialog } from '@/shared/ui/dialog'
 import { Gate } from '@/shared/ui/gate'
 
-import {
-  closeNewChatDialog,
-  takeReturnFocusTarget,
-  useNewChatDialogStore,
-} from './model/new-chat-dialog.store'
-import { useCreateChatForm } from './model/use-create-chat-form'
-import { CreateChatForm } from './ui/create-chat-form'
+import { closeNewChatDialog, useNewChatDialogStore } from './model/new-chat-dialog.store'
+import { useDialogHistory } from './model/use-dialog-history'
+
+const loadBody = () => import('./new-chat-dialog-body')
+
+const NewChatDialogBody = lazy(async () => {
+  const { NewChatDialogBody: Body } = await loadBody()
+  return { default: Body }
+})
 
 const handleOpenChange = (isOpen: boolean) => {
   if (!isOpen) closeNewChatDialog()
 }
 
-// Фокусом после закрытия управляем сами: на инициатор после отмены, в открытый чат — после создания.
-const handleCloseAutoFocus = (event: Event) => {
-  event.preventDefault()
-  takeReturnFocusTarget()?.focus()
-}
-
-function NewChatDialogBody() {
-  const model = useCreateChatForm()
-  const preventWhileChecking = (event: Event) => {
-    if (model.isChecking) event.preventDefault()
-  }
-
-  return (
-    <DialogContent
-      title="Новый чат"
-      isCloseDisabled={model.isChecking}
-      onEscapeKeyDown={preventWhileChecking}
-      onInteractOutside={preventWhileChecking}
-      onCloseAutoFocus={handleCloseAutoFocus}
-      onOpenAutoFocus={model.onOpenAutoFocus}
-    >
-      <CreateChatForm model={model} onCancel={closeNewChatDialog} />
-    </DialogContent>
-  )
-}
-
 /** Форма «Новый чат»: на desktop — модалка, на mobile — полноэкранная панель. */
 export function NewChatDialog() {
   const isOpen = useNewChatDialogStore((state) => state.isOpen)
+  useDialogHistory(isOpen)
+
+  // Чанк формы — не в начальной загрузке, но подгружается сразу после неё: открытие без задержки.
+  // Ошибка загрузки (новый деплой, офлайн) здесь не важна: при открытии чанк запросится снова.
+  useEffect(() => {
+    loadBody().catch(() => undefined)
+  }, [])
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <Gate when={isOpen}>
-        <NewChatDialogBody />
+        <Suspense>
+          <NewChatDialogBody />
+        </Suspense>
       </Gate>
     </Dialog>
   )

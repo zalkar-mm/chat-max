@@ -11,6 +11,7 @@
   --font-title: 600 17px/24px var(--font);
   --font-body: 400 15px/20px var(--font); /* messages, inputs, cell titles */
   --font-body-strong: 500 15px/20px var(--font);
+  --font-body-mobile-input: 400 16px/20px var(--font); /* поля на <900: iOS не зумит при фокусе */
   --font-detail: 400 14px/16px var(--font); /* cell subtitle (last message) */
   --font-description: 400 12px/14px var(--font); /* time in chat list, hints */
   --font-label: 400 12px/16px var(--font);
@@ -66,9 +67,10 @@
   --avatar-header: 36px;
 
   /* accent (same in both schemes) */
-  --accent: #007aff;
-  --accent-hover: #479fff;
-  --accent-pressed: #006ee5;
+  /* sprint-4 a11y: белый текст на #007aff — 4.0:1, на #0070eb — 4.65:1 (кнопки, счётчики). Ховер темнее. */
+  --accent: #0070eb;
+  --accent-hover: #0066d6;
+  --accent-pressed: #005fc4;
   --accent-fade: #007aff29;
   --accent-selected: #007aff14;
   --positive: #1abe43;
@@ -94,10 +96,10 @@
 
   --text-primary: #060708;
   --text-secondary: #060708ad;
-  --text-tertiary: #06070885;
+  --text-tertiary: #06070899; /* sprint-4 a11y: 85 → 99, контраст ≥ 4.5 и на --bg-surface */
   --text-mute: #06070866;
   --text-inverse: #fff;
-  --text-link: #007aff;
+  --text-link: #0068d9; /* sprint-4 a11y: #007aff на белом — 4.0 */
 
   --icon-primary: #060708d6;
   --icon-secondary: #060708a3;
@@ -131,7 +133,7 @@
   --bubble-out-time: #ffffffd6;
   --bubble-out-status: #ffffffd6;
 
-  --counter-bg: #007aff;
+  --counter-bg: #0070eb;
   --counter-text: #fff;
   --counter-mute: #0607081f;
   --scrollbar: #0c0d0e29;
@@ -153,7 +155,7 @@
   --text-tertiary: #ffffffa3;
   --text-mute: #fff6;
   --text-inverse: #060708;
-  --text-link: #007aff;
+  --text-link: #3d95ff; /* sprint-4 a11y: #007aff на тёмном — 4.4 */
 
   --icon-primary: #fff;
   --icon-secondary: #ffffffad;
@@ -190,7 +192,7 @@
   --positive: #2bc644;
   --negative: #ce4257;
   --attention: #ffd60a;
-  --counter-bg: #007aff;
+  --counter-bg: #0070eb;
   --counter-text: #fff;
   --counter-mute: #ffffff47;
   --scrollbar: #ffffff1f;
@@ -265,7 +267,7 @@
   --bubble-out-retry-fg: #d6262f;
   --bubble-status-error: #ff303c;
   --date-pill-bg: #0909090d;
-  --date-pill-fg: #06070885;
+  --date-pill-fg: #06070899;
   --scroll-fab-bg: #fff;
   --scroll-fab-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
 }
@@ -304,7 +306,7 @@
   --bubble-in-status-read: #007aff; /* на случай статусов во входящих — не используем */
   --bubble-unsupported-fg-in: #06070885;
   --bubble-unsupported-fg-out: #ffffffa3;
-  --fab-badge-bg: #007aff;
+  --fab-badge-bg: #0070eb;
   --fab-badge-fg: #fff;
 }
 :root[data-theme='dark'] {
@@ -312,7 +314,7 @@
   --bubble-in-status-read: #007aff;
   --bubble-unsupported-fg-in: #ffffff85;
   --bubble-unsupported-fg-out: #ffffffa3;
-  --fab-badge-bg: #007aff;
+  --fab-badge-bg: #0070eb;
   --fab-badge-fg: #fff;
 }
 

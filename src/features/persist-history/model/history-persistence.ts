@@ -22,7 +22,9 @@ function cancelSave() {
 }
 
 function saveNow() {
-  saveTimer = null
+  // Вызов не по таймеру (уход вкладки, pagehide) отменяет отложенную запись: иначе она позже перезапишет
+  // историю устаревшим состоянием — уже после того, как сессию забрала другая вкладка.
+  cancelSave()
   const credentials = getSessionCredentials()
   if (!credentials) return
   writeHistory(currentStorage(), credentials.idInstance, {
@@ -43,33 +45,68 @@ function loadHistory(idInstance: string) {
   hydrateMessages(history?.messages ?? [])
 }
 
+/** Вкладка становится активной: перечитать историю, которую записала прежняя активная вкладка. */
+export function reloadHistory() {
+  const credentials = getSessionCredentials()
+  if (credentials) loadHistory(credentials.idInstance)
+}
+
+/** Вкладка уступает сессию: несохранённое пишется сразу, следующая вкладка прочитает его. */
+export function flushHistory() {
+  if (saveTimer !== null) saveNow()
+}
+
+let stopCleanup: (() => void) | null = null
+
+/**
+ * Удаление истории при выходе — в любой вкладке, и в неактивной тоже: выход с заглушки, когда
+ * активную уже закрыли, иначе оставил бы переписку в хранилище. Запускается из app (идемпотентно).
+ */
+export function startHistoryCleanup() {
+  if (stopCleanup) return stopCleanup
+  const unsubscribe = subscribeToSessionChange((current, previous) => {
+    if (previous && !current) {
+      cancelSave()
+      removeHistory(previous.idInstance)
+    }
+  })
+  stopCleanup = () => {
+    unsubscribe()
+    stopCleanup = null
+  }
+  return stopCleanup
+}
+
 let stopPersistence: (() => void) | null = null
 
-/** Запускается из app (идемпотентно). Вход — загрузить историю инстанса, выход — удалить её. */
+/**
+ * Запускается из app (идемпотентно) и только в активной вкладке — пишет историю одна вкладка.
+ * Вход — загрузить историю инстанса; удаление при выходе — `startHistoryCleanup`.
+ */
 export function startHistoryPersistence() {
   if (stopPersistence) return stopPersistence
 
-  const unsubscribeSession = subscribeToSessionChange((current, previous) => {
+  const unsubscribeSession = subscribeToSessionChange((current) => {
     cancelSave()
-    if (previous && !current) removeHistory(previous.idInstance)
     if (current) loadHistory(current.idInstance)
   })
   const unsubscribeChats = subscribeToChats(scheduleSave)
   const unsubscribeMessages = subscribeToMessages(scheduleSave)
-  const handlePageHide = () => {
-    if (saveTimer !== null) saveNow()
-  }
+  const handlePageHide = flushHistory
   window.addEventListener('pagehide', handlePageHide)
 
+  // Запуск при живой сессии — вкладка снова стала активной: другая могла записать историю новее,
+  // поэтому сначала читаем её, а не перезаписываем своим устаревшим состоянием.
   const credentials = getSessionCredentials()
-  if (credentials && getAllChats().length === 0) loadHistory(credentials.idInstance)
+  if (credentials) loadHistory(credentials.idInstance)
 
   stopPersistence = () => {
     unsubscribeSession()
     unsubscribeChats()
     unsubscribeMessages()
     window.removeEventListener('pagehide', handlePageHide)
-    cancelSave()
+    // Остановка — уход вкладки в неактивные или размонтирование: несохранённое не теряем.
+    flushHistory()
     stopPersistence = null
   }
   return stopPersistence

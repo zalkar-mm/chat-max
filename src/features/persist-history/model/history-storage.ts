@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/mini'
 
 import type { Chat } from '@/entities/chat/model/chat.types'
 import type { Message } from '@/entities/message/model/message.types'
@@ -11,10 +11,10 @@ const VERSION = 1
 
 const chatSchema = z.object({
   id: z.string(),
-  phone: z.string().nullable(),
-  name: z.string().nullable(),
+  phone: z.nullable(z.string()),
+  name: z.nullable(z.string()),
   title: z.string(),
-  unreadCount: z.number().int().nonnegative(),
+  unreadCount: z.int().check(z.nonnegative()),
   createdAt: z.number(),
   lastActivityAt: z.number(),
 })

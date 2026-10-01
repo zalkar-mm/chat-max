@@ -1,5 +1,5 @@
-import { screen, within } from '@testing-library/react'
-import { http, HttpResponse } from 'msw'
+import { act, screen, waitFor, within } from '@testing-library/react'
+import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 
 import { server } from '@/mocks/node'
@@ -110,7 +110,7 @@ describe('Спринт 2, задача 2 — поиск номера и созд
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     expect(screen.getByRole('heading', { name: '+7 999 123-45-67' })).toBeInTheDocument()
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     expect(within(list).getAllByRole('button')[0]).toHaveTextContent('+7 999 123-45-67')
   })
 
@@ -119,7 +119,7 @@ describe('Спринт 2, задача 2 — поиск номера и созд
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     await createChatViaForm(user, '8 (999) 123-45-67')
-    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    const list = screen.getByRole('navigation', { name: 'Чаты' })
     expect(within(list).getAllByRole('button')).toHaveLength(1)
     expect(bodies).toHaveLength(1)
   })
@@ -144,5 +144,65 @@ describe('Спринт 2, задача 2 — поиск номера и созд
     await user.type(phone, '79991234567')
     await user.tab()
     expect(bodies).toEqual([])
+  })
+
+  it('«Назад» браузера закрывает форму; из созданного чата «Назад» ведёт к списку', async () => {
+    const { user, router } = await openForm()
+    await act(() => router.navigate(-1))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+
+    await createChatViaForm(user, '79991234567')
+    await act(() => router.navigate(-1))
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/')
+    })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('закрытие формы кнопкой снимает её запись из истории', async () => {
+    const { user, router } = await openForm()
+    const entries = router.state.historyAction
+    await user.keyboard('{Escape}')
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(router.state.historyAction).toBe('POP')
+    })
+    expect(entries).toBe('PUSH')
+  })
+
+  it('после F5/«Вперёд» с записью формы в истории «Назад» всё равно закрывает форму', async () => {
+    const view = await renderSignedInApp()
+    await act(() => view.router.navigate('/', { state: { newChatDialog: true } }))
+    await waitFor(() => {
+      expect(view.router.state.location.state).toBeNull()
+    })
+    await view.user.click(screen.getByRole('button', { name: 'Новый чат' }))
+    await screen.findByRole('dialog', { name: 'Новый чат' })
+    await act(() => view.router.navigate(-1))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  })
+
+  it('«Назад» во время проверки номера: форма закрыта, чат не создаётся и не открывается', async () => {
+    server.use(
+      http.post('*/waInstance:id/checkAccount/:token', async () => {
+        await delay(300)
+        return HttpResponse.json({ exist: true, chatId: '79991234567@c.us' })
+      }),
+    )
+    const { user, router, phone } = await openForm()
+    await user.type(phone, '79991234567{Enter}')
+    await act(() => router.navigate(-1))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    await act(() => new Promise((resolve) => setTimeout(resolve, 500)))
+    expect(router.state.location.pathname).toBe('/')
+    expect(screen.getByText('Здесь появятся ваши чаты')).toBeInTheDocument()
   })
 })

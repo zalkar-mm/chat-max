@@ -1,25 +1,25 @@
-import { z } from 'zod'
+import { z } from 'zod/mini'
 
 import type { DeliveryUpdate, MessageContent } from '@/entities/message/model/message.types'
 import { toInstanceState } from '@/entities/session/lib/to-instance-state'
 
 import type { NotificationEvent } from './notification-event'
 
-const optionalString = z.string().nullish()
+const optionalString = z.nullish(z.string())
 
 const senderDataSchema = z.object({
-  chatId: z.string().min(1),
+  chatId: z.string().check(z.minLength(1)),
   chatType: optionalString,
   chatName: optionalString,
   senderName: optionalString,
   senderContactName: optionalString,
-  senderPhoneNumber: z.union([z.number(), z.string()]).nullish(),
+  senderPhoneNumber: z.nullish(z.union([z.number(), z.string()])),
 })
 
 const messageDataSchema = z.object({
   typeMessage: z.string(),
-  textMessageData: z.object({ textMessage: z.string() }).nullish(),
-  extendedTextMessageData: z.object({ text: z.string() }).nullish(),
+  textMessageData: z.nullish(z.object({ textMessage: z.string() })),
+  extendedTextMessageData: z.nullish(z.object({ text: z.string() })),
 })
 
 const messageWebhookSchema = z.object({
@@ -28,7 +28,7 @@ const messageWebhookSchema = z.object({
     'outgoingMessageReceived',
     'outgoingAPIMessageReceived',
   ]),
-  idMessage: z.string().min(1),
+  idMessage: z.string().check(z.minLength(1)),
   timestamp: z.number(),
   senderData: senderDataSchema,
   messageData: messageDataSchema,
@@ -36,7 +36,7 @@ const messageWebhookSchema = z.object({
 
 const statusWebhookSchema = z.object({
   typeWebhook: z.literal('outgoingMessageStatus'),
-  idMessage: z.string().min(1),
+  idMessage: z.string().check(z.minLength(1)),
   status: z.string(),
 })
 

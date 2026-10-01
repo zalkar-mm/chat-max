@@ -1,6 +1,9 @@
 import { cleanup, configure } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 
+import { FakeBroadcastChannel } from './fake-broadcast-channel'
+import { FakeLockManager } from './fake-lock-manager'
+
 import '@testing-library/jest-dom/vitest'
 import './zustand-mock'
 
@@ -37,6 +40,16 @@ Object.defineProperty(window, 'ResizeObserver', { writable: true, value: ResizeO
 // jsdom не умеет прокрутку: заглушка, которую тесты могут подсмотреть через spy.
 Element.prototype.scrollTo = noop
 
+// Связь вкладок — в памяти теста (см. fake-broadcast-channel.ts).
+Object.defineProperty(globalThis, 'BroadcastChannel', {
+  writable: true,
+  value: FakeBroadcastChannel,
+})
+
+// Web Locks — тоже в памяти: по ним новая вкладка видит, есть ли активная (см. tab-leadership).
+const locks = new FakeLockManager()
+Object.defineProperty(navigator, 'locks', { configurable: true, value: locks })
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' })
 })
@@ -46,6 +59,8 @@ afterEach(() => {
   server.resetHandlers()
   server.events.removeAllListeners()
   resetScenarios()
+  FakeBroadcastChannel.reset()
+  locks.reset()
   sessionStorage.clear()
   localStorage.clear()
 })

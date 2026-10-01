@@ -8,7 +8,7 @@ export type TextareaProps = ComponentProps<'textarea'> & {
 
 export function Textarea({ invalid = false, className, ...props }: TextareaProps) {
   const rootCn = cn(
-    'block w-full min-w-0 resize-none rounded-m border-none bg-input px-3.5 py-2.5 typo-body text-primary outline-none placeholder:text-tertiary',
+    'block w-full min-w-0 resize-none rounded-m border-none bg-input px-3.5 py-2.5 typo-input text-primary outline-none placeholder:text-tertiary',
     'focus:ring-2 focus:ring-accent focus-visible:outline-none',
     'disabled:cursor-not-allowed',
     invalid && 'ring-2 ring-negative focus:ring-negative',

@@ -41,13 +41,14 @@ export function simulateRecipient(
     pushNotification(idInstance, statusBody(idMessage, 'delivered'))
   })
 
-  const reply = (body: Record<string, unknown>) => {
+  // Тело собирается в момент «ответа»: отметка времени собеседника позже нашей отправки, как в жизни.
+  const reply = (makeBody: () => Record<string, unknown>) => {
     later(1600, () => {
-      pushNotification(idInstance, body)
+      pushNotification(idInstance, makeBody())
     })
   }
   if (text.includes('#photo')) {
-    reply(
+    reply(() =>
       incomingMessageBody({
         chatId,
         idMessage: nextId('in'),
@@ -56,7 +57,7 @@ export function simulateRecipient(
       }),
     )
   } else if (text.includes('#new')) {
-    reply(
+    reply(() =>
       incomingMessageBody({
         chatId: '20000001',
         idMessage: nextId('in'),
@@ -66,7 +67,7 @@ export function simulateRecipient(
       }),
     )
   } else if (text.includes('#group')) {
-    reply(
+    reply(() =>
       incomingMessageBody({
         chatId: '-100500',
         idMessage: nextId('in'),
@@ -75,20 +76,18 @@ export function simulateRecipient(
       }),
     )
   } else if (text.includes('#broken')) {
-    reply({ typeWebhook: 'incomingMessageReceived', senderData: 'битые данные' })
+    reply(() => ({ typeWebhook: 'incomingMessageReceived', senderData: 'битые данные' }))
   } else if (text.includes('#logout')) {
-    reply(stateBody('notAuthorized'))
+    reply(() => stateBody('notAuthorized'))
   } else if (text.includes('#quota')) {
-    reply({ typeWebhook: 'quotaExceeded', quotaData: { method: 'correspondents' } })
+    reply(() => ({ typeWebhook: 'quotaExceeded', quotaData: { method: 'correspondents' } }))
   } else {
-    const body = incomingMessageBody({
-      chatId,
-      idMessage: nextId('in'),
-      text: `Ответ на «${text}»`,
-      senderName: 'Анна',
-    })
-    reply(body)
-    if (text.includes('#dup')) reply(body)
+    const idMessage = nextId('in')
+    const makeAnswer = () =>
+      incomingMessageBody({ chatId, idMessage, text: `Ответ на «${text}»`, senderName: 'Анна' })
+    reply(makeAnswer)
+    // Повторная доставка того же события — тот же idMessage.
+    if (text.includes('#dup')) reply(makeAnswer)
   }
   later(2600, () => {
     pushNotification(idInstance, statusBody(idMessage, 'read'))

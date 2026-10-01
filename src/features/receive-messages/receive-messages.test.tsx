@@ -17,8 +17,8 @@ const ID = '3100000001'
 // chatId, который мок checkAccount выдаёт для 79991234567.
 const CHAT_ID = '191234567'
 
-const list = () => screen.getByRole('navigation', { name: 'Список чатов' })
-const feed = () => screen.getByRole('log', { name: 'Сообщения' })
+const list = () => screen.getByRole('navigation', { name: 'Чаты' })
+const feed = () => screen.getByRole('log', { name: /^Сообщения с / })
 const push = (body: Record<string, unknown>) => {
   act(() => {
     pushNotification(ID, body)
