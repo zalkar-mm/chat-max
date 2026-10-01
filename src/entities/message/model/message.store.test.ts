@@ -64,6 +64,7 @@ describe('message.store', () => {
       text: 'привет',
       createdAt: NOW,
       direction: 'incoming',
+      content: 'text',
       idMessage: 'X1',
     })
     markMessageFailed('in-1', 'failed')

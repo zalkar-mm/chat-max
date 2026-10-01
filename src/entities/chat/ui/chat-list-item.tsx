@@ -1,4 +1,4 @@
-import { AlertCircle, Check, Clock, type LucideIcon } from 'lucide-react'
+import { AlertCircle, Check, CheckCheck, Clock, type LucideIcon } from 'lucide-react'
 
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/button'
@@ -6,7 +6,7 @@ import { Gate } from '@/shared/ui/gate'
 
 import { ChatAvatar } from './chat-avatar'
 
-export type ChatListItemStatus = 'sending' | 'sent' | 'failed'
+export type ChatListItemStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
 
 const MAX_UNREAD = 99
 
@@ -16,6 +16,8 @@ const STATUS_VIEW: Record<
 > = {
   sending: { Icon: Clock, className: 'text-icon-tertiary', label: 'отправляется' },
   sent: { Icon: Check, className: 'text-icon-tertiary', label: 'отправлено' },
+  delivered: { Icon: CheckCheck, className: 'text-icon-tertiary', label: 'доставлено' },
+  read: { Icon: CheckCheck, className: 'text-link', label: 'прочитано' },
   failed: { Icon: AlertCircle, className: 'text-bubble-status-error', label: 'не отправлено' },
 }
 

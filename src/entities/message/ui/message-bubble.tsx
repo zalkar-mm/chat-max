@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { Check, Clock } from 'lucide-react'
+import { Check, CheckCheck, Clock, File } from 'lucide-react'
 
 import { cn } from '@/shared/lib/cn'
 
@@ -15,7 +15,7 @@ type MessageBubbleProps = {
 }
 
 type Direction = Message['direction']
-type MetaKind = 'incoming' | 'sending' | 'sent' | 'failed'
+type MetaKind = 'incoming' | 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
 
 const ROW_CN: Record<Direction, string> = {
   incoming: 'justify-start',
@@ -46,6 +46,8 @@ const STATUS_LABEL: Record<MetaKind, string | null> = {
   incoming: null,
   sending: 'отправляется',
   sent: 'отправлено',
+  delivered: 'доставлено',
+  read: 'прочитано',
   failed: 'не отправлено',
 }
 
@@ -55,12 +57,31 @@ const STATUS_ICON: Record<MetaKind, ReactNode> = {
   incoming: null,
   sending: <Clock className={cn(STATUS_ICON_CN, 'opacity-70')} aria-hidden />,
   sent: <Check className={STATUS_ICON_CN} aria-hidden />,
+  delivered: <CheckCheck className={STATUS_ICON_CN} aria-hidden />,
+  // Прочитано — белый 100% и толще линия: второй цвет на синем градиенте не читается (DS спринта 3).
+  read: <CheckCheck className="size-4 shrink-0 text-white" strokeWidth={2.5} aria-hidden />,
   // Ошибку показывают aside и footer: красная иконка на синем градиенте плохо читается.
   failed: null,
 }
 
 const toMetaKind = (message: Message): MetaKind =>
   message.direction === 'incoming' ? 'incoming' : message.delivery.status
+
+const UNSUPPORTED_TEXT = 'Сообщение этого типа не поддерживается'
+
+function MessageText({ message }: { message: Message }) {
+  if (message.content === 'unsupported') {
+    return (
+      <span className="inline-flex items-center gap-1.5 typo-body italic opacity-80">
+        <File className="size-4 shrink-0" aria-hidden />
+        {UNSUPPORTED_TEXT}
+      </span>
+    )
+  }
+  return (
+    <span className="typo-body whitespace-pre-wrap [overflow-wrap:anywhere]">{message.text}</span>
+  )
+}
 
 export function MessageBubble({ message, isLastInGroup, footer, aside }: MessageBubbleProps) {
   const { direction } = message
@@ -90,9 +111,7 @@ export function MessageBubble({ message, isLastInGroup, footer, aside }: Message
         <div className="flex max-w-full items-end gap-2">
           {aside}
           <div className={bubbleCn}>
-            <span className="typo-body whitespace-pre-wrap [overflow-wrap:anywhere]">
-              {message.text}
-            </span>
+            <MessageText message={message} />
             <span className={metaCn}>
               <span>{time}</span>
               {STATUS_ICON[metaKind]}

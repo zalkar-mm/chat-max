@@ -15,6 +15,7 @@ const outgoing = (id: string, createdAt: number): Message => ({
   text: id,
   createdAt,
   direction: 'outgoing',
+  content: 'text',
   delivery: { status: 'sent', idMessage: `w-${id}` },
 })
 
@@ -24,6 +25,7 @@ const incoming = (id: string, createdAt: number): Message => ({
   text: id,
   createdAt,
   direction: 'incoming',
+  content: 'text',
   idMessage: `w-${id}`,
 })
 
