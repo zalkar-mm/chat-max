@@ -3,6 +3,8 @@ import { useForm, useWatch } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
+import { useIsSessionExpired } from '@/entities/session/model/session.store'
+
 import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/shared/lib/use-media-query'
 
 import {
@@ -19,6 +21,7 @@ export function useSignInForm() {
   const step = useSignInFlowStore((state) => state.step)
   const draft = useSignInFlowStore((state) => state.draft)
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY)
+  const hasSessionExpired = useIsSessionExpired()
   const [shouldFocusOnOpen] = useState(isDesktop)
   const [isAdvancedToggled, setAdvancedToggled] = useState(false)
 
@@ -42,7 +45,8 @@ export function useSignInForm() {
   const formStep = step.kind === 'form' ? step : null
   const isChecking = formStep?.isChecking ?? false
   const serverError = formStep?.error ? SIGN_IN_ERROR_TEXT[formStep.error] : null
-  const isSessionExpired = formStep?.isSessionExpired ?? false
+  // «Истекла» — и при восстановлении сессии, и когда цикл получения получил 401 посреди работы.
+  const isSessionExpired = (formStep?.isSessionExpired ?? false) || hasSessionExpired
   const isSubmitDisabled = idInstance.trim() === '' || apiTokenInstance.trim() === ''
   const isAdvancedOpen = isAdvancedToggled || errors.apiUrl !== undefined
 
