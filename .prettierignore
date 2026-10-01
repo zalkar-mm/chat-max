@@ -5,3 +5,6 @@ design
 public/mockServiceWorker.js
 spints
 sprints
+coverage
+playwright-report
+test-results

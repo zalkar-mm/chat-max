@@ -22,6 +22,19 @@ const startingThenAuthorized = (): StateScenario => {
   }
 }
 
+// Первая проверка — notAuthorized, следующие — authorized: QR «отсканирован», «Проверить снова» пускает.
+const notAuthorizedThenAuthorized = (): StateScenario => {
+  let calls = 0
+  return {
+    kind: 'state',
+    delayMs: 400,
+    next: () => {
+      calls += 1
+      return calls > 1 ? 'authorized' : 'notAuthorized'
+    },
+  }
+}
+
 // Последние две цифры idInstance выбирают сценарий. Таблица продублирована в src/mocks/README.md.
 const SCENARIOS: Readonly<Record<string, () => StateScenario>> = {
   '01': () => constant('authorized'),
@@ -31,6 +44,7 @@ const SCENARIOS: Readonly<Record<string, () => StateScenario>> = {
   '05': () => constant('blocked'),
   '06': () => constant('pendingPassword'),
   '07': () => constant('starting'),
+  '08': notAuthorizedThenAuthorized,
   '29': () => ({ kind: 'status', delayMs: 300, status: 429 }),
   '50': () => ({ kind: 'status', delayMs: 300, status: 500 }),
   '99': () => constant('authorized', 20_000),

@@ -170,7 +170,18 @@ const layerRestrictedImports = (layer, { upper }) => [
 const UPPER_LAYERS = ['pages', 'widgets', 'features']
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'dev-dist', 'public', 'coverage', 'design'] },
+  {
+    ignores: [
+      'dist',
+      'node_modules',
+      'dev-dist',
+      'public',
+      'coverage',
+      'design',
+      'playwright-report',
+      'test-results',
+    ],
+  },
 
   js.configs.recommended,
 
@@ -375,6 +386,36 @@ export default tseslint.config(
       'no-console': 'off',
       'import-x/no-restricted-paths': 'off',
       'import-x/no-default-export': 'off',
+    },
+  },
+
+  // e2e (Playwright) и его конфиг: Node-процесс вне FSD, default export требует Playwright
+  {
+    files: ['e2e/**/*.ts', 'playwright.config.ts'],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+    rules: {
+      'import-x/no-restricted-paths': 'off',
+    },
+  },
+  {
+    files: ['playwright.config.ts'],
+    rules: {
+      'import-x/no-default-export': 'off',
+    },
+  },
+
+  // scripts/ — служебные Node-скрипты на plain JS (проверка секретов и т. п.)
+  {
+    files: ['scripts/**/*.mjs'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      'no-console': 'off',
     },
   },
 

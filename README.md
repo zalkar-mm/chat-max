@@ -1,5 +1,11 @@
 # MAX-чат — GREEN-API
 
+<!--
+  TODO(sprint-5, деплой): у репозитория пока нет удалённого адреса на GitHub. После публикации
+  подставьте владельца и имя репозитория вместо <owner>/<repo> и раскомментируйте бейдж CI:
+  [![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yml)
+-->
+
 Тестовое задание: веб-интерфейс для отправки и получения текстовых сообщений в MAX
 через [GREEN-API](https://green-api.com/max). Прототип интерфейса — [web.max.ru](https://web.max.ru/).
 
@@ -16,6 +22,10 @@ VITE_API_MOCKS=true npm run dev      # моки: все статусы и оши
 Вход — `idInstance` и `apiTokenInstance` из [личного кабинета](https://console.green-api.com).
 Адрес API по умолчанию — `https://3100.api.green-api.com`; если у инстанса другой, его можно
 указать в блоке «Дополнительно». Сценарии моков — [src/mocks/README.md](src/mocks/README.md).
+
+Переменные окружения — в [`.env.example`](.env.example) (только заглушки): скопируйте в `.env.local`.
+Креды GREEN-API в env и в репозиторий не кладутся — их вводят на экране входа; CI падает, если в файлах
+есть строка, похожая на токен (`npm run check:secrets`).
 
 ### Настройка инстанса для получения
 
@@ -73,18 +83,31 @@ VITE_API_MOCKS=true npm run dev      # моки: все статусы и оши
 
 ## Скрипты
 
-| Команда            | Что делает                              |
-| ------------------ | --------------------------------------- |
-| `npm run dev`      | dev-сервер                              |
-| `npm run build`    | проверка типов и production-сборка      |
-| `npm run preview`  | локальный просмотр сборки               |
-| `npm run check`    | typecheck + lint + format:check + тесты |
-| `npm test`         | тесты (Vitest + Testing Library + MSW)  |
-| `npm run lint:fix` | ESLint с автоисправлением               |
+| Команда                 | Что делает                                                          |
+| ----------------------- | ------------------------------------------------------------------- |
+| `npm run dev`           | dev-сервер                                                          |
+| `npm run build`         | проверка типов и production-сборка                                  |
+| `npm run preview`       | локальный просмотр сборки                                           |
+| `npm run check`         | typecheck + lint + format:check + поиск секретов + тесты            |
+| `npm test`              | unit- и компонентные тесты (Vitest + Testing Library + MSW)         |
+| `npm run test:coverage` | те же тесты с покрытием; порог 80 % на доменную логику и API        |
+| `npm run test:e2e`      | e2e в Chromium (Playwright) на моке API, dev-сервер поднимается сам |
+| `npm run check:secrets` | поиск строк, похожих на токен GREEN-API                             |
+| `npm run lint:fix`      | ESLint с автоисправлением                                           |
+
+Перед первым `npm run test:e2e` нужен браузер: `npx playwright install chromium`.
+Pre-commit-хук (ставится на `npm install`) прогоняет ESLint, Prettier и поиск секретов по изменённым файлам.
+
+## Тесты и CI
+
+Пирамида и правила — [docs/testing.md](docs/testing.md). CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml))
+на каждый push и PR: поиск секретов → lint → typecheck → тесты с покрытием → build → e2e.
+Все автотесты работают на моке API (MSW); живой инстанс в CI не используется — его проверяют
+вручную по сценарию [docs/testing.md §5](docs/testing.md#5-ручная-проверка-перед-сдачей).
 
 ## Стек и правила
 
 React 19, TypeScript (strict), Vite, Tailwind CSS v4 поверх токенов дизайна, Radix UI, TanStack Query,
-Zustand, React Router, react-hook-form + zod, Vitest, MSW. Архитектура — Feature-Sliced Design.
+Zustand, React Router, react-hook-form + zod, Vitest, Playwright, MSW. Архитектура — Feature-Sliced Design.
 
 Правила разработки — [`docs/`](docs/README.md), дизайн — [`design/`](design/DESIGN.md).

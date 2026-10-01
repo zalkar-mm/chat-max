@@ -1,4 +1,4 @@
-import { act, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -74,6 +74,23 @@ describe('Спринт 2, задача 5 — поле ввода', () => {
     await user.type(composer, 'a{Shift>}{Enter}{/Shift}b')
     expect(composer).toHaveValue('a\nb')
     expect(bodies).toEqual([])
+  })
+
+  it('Enter во время IME-ввода подтверждает слово и не отправляет сообщение', async () => {
+    const bodies = sendRequests()
+    const { user, composer } = await openChat()
+    await user.type(composer, 'привет')
+
+    fireEvent.keyDown(composer, { key: 'Enter', isComposing: true })
+    // Safari подтверждает IME Enter-ом с isComposing: false, но keyCode 229.
+    fireEvent.keyDown(composer, { key: 'Enter', keyCode: 229 })
+
+    expect(composer).toHaveValue('привет')
+    expect(bodies).toEqual([])
+
+    fireEvent.keyDown(composer, { key: 'Enter' })
+    expect(await within(feed()).findByText('привет')).toBeInTheDocument()
+    expect(composer).toHaveValue('')
   })
 
   it('4–5: счётчик с 3800 символов; 4001 → «Максимум 4000 символов», отправка невозможна', async () => {

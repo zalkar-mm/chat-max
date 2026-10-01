@@ -21,7 +21,17 @@ const isTest = import.meta.env.MODE === 'test'
 // В тестах long-poll короче: события кладутся явно, а пустой ответ не должен держать тест.
 const longPollMs = (receiveTimeoutS: number) => (isTest ? 200 : receiveTimeoutS * 1000)
 
+// Service Worker MSW отвечает и без сети, поэтому офлайн браузера (DevTools → Offline,
+// Playwright `setOffline`) имитируем сами: запрос падает сетевой ошибкой, как у настоящего API.
+const isBrowserOffline = () => !isTest && !navigator.onLine
+
 export const handlers = [
+  http.all('*/waInstance:idInstance/*', () => {
+    if (isBrowserOffline()) return HttpResponse.error()
+    // undefined — запрос уходит следующему обработчику.
+    return undefined
+  }),
+
   http.get(METHOD_URL('getStateInstance'), async ({ params }) => {
     const scenario = getStateScenario(String(params.idInstance))
     await withLatency(scenario.delayMs)
@@ -74,6 +84,8 @@ export const handlers = [
     }
     const timeoutS = Number(new URL(request.url).searchParams.get('receiveTimeout') ?? 5)
     const item = await takeNotification(idInstance, longPollMs(timeoutS), request.signal)
+    // Сеть пропала, пока висел long-poll: событие остаётся в очереди до переподключения.
+    if (isBrowserOffline()) return HttpResponse.error()
     return HttpResponse.json(item)
   }),
 
