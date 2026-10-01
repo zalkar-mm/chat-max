@@ -26,7 +26,6 @@
   --animate-fade-in: fade-in var(--dur-fast) var(--ease-out) both;
   /* Индикатор загрузки появляется, только если действие дольше 300 мс (DS §5). */
   --animate-spinner-delayed: spin 800ms linear infinite, fade-in 1ms linear 300ms both;
-  --animate-shine: shine 1.4s linear infinite;
 
   @keyframes appear {
     from {
@@ -58,14 +57,6 @@
   @keyframes fade-in {
     from {
       opacity: 0;
-    }
-  }
-  @keyframes shine {
-    from {
-      background-position: 100% 0;
-    }
-    to {
-      background-position: -100% 0;
     }
   }
 }
