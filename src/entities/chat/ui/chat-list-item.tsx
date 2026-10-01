@@ -67,7 +67,7 @@ export function ChatListItem({
   const hasTime = time !== null
   const unreadLabel = unreadCount > MAX_UNREAD ? `${MAX_UNREAD}+` : String(unreadCount)
   const ariaCurrent = isSelected ? 'true' : undefined
-  // DS §3: «Анна, Привет!, 14:05, 2 непрочитанных, прочитано» — пустые части пропускаются.
+  // Доступное имя: «Анна, Привет!, 14:05, 2 непрочитанных, прочитано» — пустые части пропускаются.
   const ariaLabel = [
     title,
     preview ?? 'Нет сообщений',

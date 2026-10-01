@@ -28,13 +28,13 @@ const push = (body: Record<string, unknown>) => {
 const reply = (text: string, overrides: Partial<Parameters<typeof incomingMessageBody>[0]> = {}) =>
   incomingMessageBody({ chatId: CHAT_ID, idMessage: `in-${text}`, text, ...overrides })
 
-describe('Спринт 3 — получение сообщений', () => {
+describe('Получение сообщений', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.useRealTimers()
   })
 
-  it('задача 2.1, 2.7: ответ попадает в тот же чат слева, время — время отправки', async () => {
+  it('ответ попадает в тот же чат слева, время — время отправки', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     const sentAt = new Date(2026, 9, 1, 9, 41).getTime() / 1000
@@ -48,7 +48,7 @@ describe('Спринт 3 — получение сообщений', () => {
     })
   })
 
-  it('задача 2.2–2.3: новый собеседник → новый чат наверху с именем; имя заменяет номер', async () => {
+  it('новый собеседник → новый чат наверху с именем; имя заменяет номер', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     push(reply('Это Анна', { senderName: 'Анна' }))
@@ -68,7 +68,7 @@ describe('Спринт 3 — получение сообщений', () => {
     })
   })
 
-  it('задача 2.4–2.6: ссылка — текст; фото — плейсхолдер; группа — ничего, событие удалено', async () => {
+  it('ссылка — текст; фото — плейсхолдер; группа — ничего, событие удалено', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     push(reply('https://max.ru', { typeMessage: 'extendedTextMessage' }))
@@ -92,7 +92,7 @@ describe('Спринт 3 — получение сообщений', () => {
     })
   })
 
-  it('задача 1.7: битое событие удаляется, следующее обрабатывается', async () => {
+  it('битое событие удаляется, следующее обрабатывается', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     push({ typeWebhook: 'incomingMessageReceived', senderData: 'битые' })
@@ -100,7 +100,7 @@ describe('Спринт 3 — получение сообщений', () => {
     expect(await within(feed()).findByText('живой')).toBeInTheDocument()
   })
 
-  it('задача 3: эхо своей отправки и повторная доставка не дублируют сообщения', async () => {
+  it('эхо своей отправки и повторная доставка не дублируют сообщения', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     await user.type(screen.getByRole('textbox', { name: 'Сообщение' }), 'Привет{Enter}')
@@ -116,7 +116,7 @@ describe('Спринт 3 — получение сообщений', () => {
     expect(within(feed()).getAllByText('Привет')).toHaveLength(1)
   })
 
-  it('задача 3.3 (Could): сообщение с телефона — справа в чате получателя', async () => {
+  it('сообщение с телефона — справа в чате получателя', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     push(
@@ -130,7 +130,7 @@ describe('Спринт 3 — получение сообщений', () => {
     expect(within(feed()).getByText(', отправлено')).toBeInTheDocument()
   })
 
-  it('задача 4: «доставлено» → «прочитано»; опоздавшее «доставлено» не понижает; «не доставлено» → Повторить', async () => {
+  it('«доставлено» → «прочитано»; опоздавшее «доставлено» не понижает; «не доставлено» → Повторить', async () => {
     let sent = 0
     server.use(
       http.post('*/waInstance:id/sendMessage/:token', () => {
@@ -161,7 +161,7 @@ describe('Спринт 3 — получение сообщений', () => {
     expect(within(feed()).getByRole('button', { name: 'Повторить' })).toBeInTheDocument()
   })
 
-  it('задача 5.1–5.2: входящее в неоткрытый чат → счётчик и наверх; открыли → счётчик исчез', async () => {
+  it('входящее в неоткрытый чат → счётчик и наверх; открыли → счётчик исчез', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991111111')
     await createChatViaForm(user, '79992222222')
@@ -177,7 +177,7 @@ describe('Спринт 3 — получение сообщений', () => {
     })
   })
 
-  it('задача 5.3: вкладка скрыта → «(2) MAX-чат»; вернулись → обычный заголовок', async () => {
+  it('вкладка скрыта → «(2) MAX-чат»; вернулись → обычный заголовок', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden')
@@ -199,7 +199,7 @@ describe('Спринт 3 — получение сообщений', () => {
     })
   })
 
-  it('задача 7.2, 7.4: инстанс отключился → баннер и поле неактивно; authorized → всё вернулось', async () => {
+  it('инстанс отключился → баннер и поле неактивно; authorized → всё вернулось', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     push(stateBody('notAuthorized'))
@@ -215,7 +215,7 @@ describe('Спринт 3 — получение сообщений', () => {
     expect(screen.getByRole('textbox', { name: 'Сообщение' })).toBeEnabled()
   })
 
-  it('задача 7.3: событие лимита → жёлтый баннер', async () => {
+  it('событие лимита → жёлтый баннер', async () => {
     await renderSignedInApp()
     push({ typeWebhook: 'quotaExceeded', quotaData: {} })
     expect(
@@ -225,7 +225,7 @@ describe('Спринт 3 — получение сообщений', () => {
     ).toBeInTheDocument()
   })
 
-  it('задача 7.3: 466 из очереди → тот же жёлтый баннер лимита', async () => {
+  it('466 из очереди → тот же жёлтый баннер лимита', async () => {
     server.use(
       http.get(
         '*/waInstance:id/receiveNotification/:token',
@@ -239,7 +239,7 @@ describe('Спринт 3 — получение сообщений', () => {
     expect(screen.queryByText(/Сервис GREEN-API недоступен/)).not.toBeInTheDocument()
   })
 
-  it('задача 7.1: Webhook URL в настройках → баннер, получение не запускается', async () => {
+  it('Webhook URL в настройках → баннер, получение не запускается', async () => {
     let receives = 0
     server.events.on('request:start', ({ request }) => {
       if (request.url.includes('receiveNotification')) receives += 1
@@ -249,14 +249,14 @@ describe('Спринт 3 — получение сообщений', () => {
     expect(receives).toBe(0)
   })
 
-  it('задача 1.5: три сбоя сервера подряд → баннер с обратным отсчётом', async () => {
+  it('три сбоя сервера подряд → баннер с обратным отсчётом', async () => {
     await renderSignedInApp({ idInstance: '3100000070' })
     expect(
       await screen.findByText(/Сервис GREEN-API недоступен/, {}, { timeout: 10_000 }),
     ).toBeInTheDocument()
   }, 15_000)
 
-  it('задача 1, 401 из очереди → вход с «Сессия недействительна, войдите снова»', async () => {
+  it('401 из очереди → вход с «Сессия недействительна, войдите снова»', async () => {
     server.use(
       http.get(
         '*/waInstance:id/receiveNotification/:token',

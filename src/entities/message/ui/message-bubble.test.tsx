@@ -69,7 +69,7 @@ describe('MessageBubble', () => {
   it.each([
     [incoming('привет'), 'Анна, 14:05: привет'],
     [outgoing({ status: 'delivered', idMessage: 'W1' }), 'Вы, 14:05, доставлено: '],
-  ])('озвучивает автора, время и статус (DS §3): %#', (message, prefix) => {
+  ])('озвучивает автора, время и статус: %#', (message, prefix) => {
     render(<MessageBubble senderLabel="Анна" message={message} isLastInGroup />)
     expect(screen.getByRole('article')).toHaveAccessibleName(new RegExp(`^${prefix}`))
   })

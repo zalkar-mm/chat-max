@@ -1,0 +1,13 @@
+# Netlify: собрать проект и отдавать dist/, а не исходники из корня.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA: прямые ссылки и F5 на /chat/… отдают index.html. Заголовки безопасности — в dist/_headers.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -19,24 +19,24 @@ async function chatWithHistory() {
       incomingMessageBody({ chatId: '191234567', idMessage: 'in-1', text: 'Ответ' }),
     )
   })
-  await screen.findByText('Ответ')
+  await within(await screen.findByRole('log')).findByText('Ответ')
   await waitFor(() => {
     expect(sessionStorage.getItem(HISTORY_KEY('3100000001'))).toContain('Ответ')
   })
   return view
 }
 
-describe('Спринт 3, задача 6 — история после перезагрузки', () => {
-  it('1: F5 → чаты, сообщения и статусы на месте', async () => {
+describe('История после перезагрузки', () => {
+  it('F5 → чаты, сообщения и статусы на месте', async () => {
     const { unmount } = await chatWithHistory()
     unmount()
     await renderApp({ path: '/chat/191234567' })
-    expect(await screen.findByText('Ответ')).toBeInTheDocument()
+    expect(await within(await screen.findByRole('log')).findByText('Ответ')).toBeInTheDocument()
     expect(screen.getByText('Привет')).toBeInTheDocument()
     expect(screen.getByText(', отправлено')).toBeInTheDocument()
   })
 
-  it('2: «отправляется» во время F5 → «не отправлено» с «Повторить»', async () => {
+  it('«отправляется» во время F5 → «не отправлено» с «Повторить»', async () => {
     const { user, unmount } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     // F5: уходящая страница дописывает историю, поэтому «состояние на момент F5» подкладываем после неё.
@@ -74,7 +74,7 @@ describe('Спринт 3, задача 6 — история после пере�
     expect(screen.getByRole('button', { name: 'Повторить' })).toBeInTheDocument()
   })
 
-  it('3: выход → вход тем же инстансом → история пустая', async () => {
+  it('выход → вход тем же инстансом → история пустая', async () => {
     const { user } = await chatWithHistory()
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
     expect(sessionStorage.getItem(HISTORY_KEY('3100000001'))).toBeNull()
@@ -84,7 +84,7 @@ describe('Спринт 3, задача 6 — история после пере�
     expect(await screen.findByText('Здесь появятся ваши чаты')).toBeInTheDocument()
   })
 
-  it('4: другой инстанс видит только свою историю', async () => {
+  it('другой инстанс видит только свою историю', async () => {
     const { unmount } = await chatWithHistory()
     unmount()
     sessionStorage.removeItem('max-chat:session')
@@ -93,7 +93,7 @@ describe('Спринт 3, задача 6 — история после пере�
     expect(screen.getByText('Здесь появятся ваши чаты')).toBeInTheDocument()
   })
 
-  it('5: повреждённые данные → пустая история без экрана ошибки', async () => {
+  it('повреждённые данные → пустая история без экрана ошибки', async () => {
     sessionStorage.setItem(HISTORY_KEY('3100000001'), '{сломано')
     await renderSignedInApp()
     expect(screen.getByText('Здесь появятся ваши чаты')).toBeInTheDocument()

@@ -35,7 +35,7 @@ describe('toCreateChatFailure', () => {
   })
 })
 
-// Таблица результатов checkAccount (спринт 2, задача 2).
+// Таблица результатов checkAccount.
 describe('CREATE_CHAT_FAILURE_TEXT', () => {
   it.each([
     ['notFound', 'Этот номер не зарегистрирован в MAX'],

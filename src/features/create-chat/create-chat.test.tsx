@@ -27,14 +27,14 @@ const openForm = async () => {
   return { ...view, dialog, phone, submit }
 }
 
-describe('Спринт 2, задача 1 — форма «Новый чат»', () => {
-  it('1: пустое поле → «Создать чат» неактивна; фокус в поле', async () => {
+describe('Форма «Новый чат»', () => {
+  it('пустое поле → «Создать чат» неактивна; фокус в поле', async () => {
     const { phone, submit } = await openForm()
     expect(submit).toBeDisabled()
     expect(phone).toHaveFocus()
   })
 
-  it('2: «8 999 123 45 67» → запрос с номером 79991234567', async () => {
+  it('«8 999 123 45 67» → запрос с номером 79991234567', async () => {
     const bodies = checkAccountRequests()
     const { user, phone } = await openForm()
     await user.type(phone, '8 999 123 45 67{Enter}')
@@ -42,7 +42,7 @@ describe('Спринт 2, задача 1 — форма «Новый чат»', 
     expect(bodies).toEqual([{ phoneNumber: 79991234567 }])
   })
 
-  it('3: «+375 29 123-45-67» → запрос с номером 375291234567', async () => {
+  it('«+375 29 123-45-67» → запрос с номером 375291234567', async () => {
     const bodies = checkAccountRequests()
     const { user, phone } = await openForm()
     await user.type(phone, '+375 29 123-45-67{Enter}')
@@ -51,7 +51,7 @@ describe('Спринт 2, задача 1 — форма «Новый чат»', 
   })
 
   it.each(['+996 555 123 456', '+7 999 123'])(
-    '4–5: «%s» → ошибка формата, запроса нет',
+    '«%s» → ошибка формата, запроса нет',
     async (input) => {
       const bodies = checkAccountRequests()
       const { user, phone } = await openForm()
@@ -64,14 +64,14 @@ describe('Спринт 2, задача 1 — форма «Новый чат»', 
     },
   )
 
-  it('6: Esc закрывает форму, фокус возвращается на «Новый чат»', async () => {
+  it('Esc закрывает форму, фокус возвращается на «Новый чат»', async () => {
     const { user } = await openForm()
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Новый чат' })).toHaveFocus()
   })
 
-  it('7: во время проверки Esc и повторный Enter ничего не делают', async () => {
+  it('во время проверки Esc и повторный Enter ничего не делают', async () => {
     let requests = 0
     let release: () => void = () => undefined
     server.use(
@@ -94,7 +94,7 @@ describe('Спринт 2, задача 1 — форма «Новый чат»', 
     await screen.findByRole('heading', { name: '+7 999 123-45-67' })
   })
 
-  it('8: Tab не выходит за пределы формы', async () => {
+  it('Tab не выходит за пределы формы', async () => {
     const { user, dialog } = await openForm()
     for (let step = 0; step < 6; step += 1) {
       await user.tab()
@@ -105,8 +105,8 @@ describe('Спринт 2, задача 1 — форма «Новый чат»', 
   })
 })
 
-describe('Спринт 2, задача 2 — поиск номера и создание чата', () => {
-  it('1: номер с MAX → чат первым в списке, открыт, в шапке номер', async () => {
+describe('Поиск номера и создание чата', () => {
+  it('номер с MAX → чат первым в списке, открыт, в шапке номер', async () => {
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
     expect(screen.getByRole('heading', { name: '+7 999 123-45-67' })).toBeInTheDocument()
@@ -114,7 +114,7 @@ describe('Спринт 2, задача 2 — поиск номера и созд
     expect(within(list).getAllByRole('button')[0]).toHaveTextContent('+7 999 123-45-67')
   })
 
-  it('2: тот же номер в другом написании → существующий чат без нового запроса', async () => {
+  it('тот же номер в другом написании → существующий чат без нового запроса', async () => {
     const bodies = checkAccountRequests()
     const { user } = await renderSignedInApp()
     await createChatViaForm(user, '79991234567')
@@ -130,7 +130,7 @@ describe('Спринт 2, задача 2 — поиск номера и созд
     ['79990004660', 'Лимит бесплатного тарифа исчерпан. Смените тариф в личном кабинете GREEN-API'],
     ['79990004030', 'Инстанс не подключён к MAX. Проверьте его в личном кабинете'],
     ['79990005000', 'Сервис GREEN-API недоступен. Попробуйте позже'],
-  ])('3–5: %s → «%s», форма открыта, номер на месте', async (number, text) => {
+  ])('%s → «%s», форма открыта, номер на месте', async (number, text) => {
     const { user, phone } = await openForm()
     await user.type(phone, `${number}{Enter}`)
     expect(await screen.findByRole('alert')).toHaveTextContent(text)
@@ -138,7 +138,7 @@ describe('Спринт 2, задача 2 — поиск номера и созд
     expect(phone).toHaveValue(number)
   })
 
-  it('6: проверка не вызывается во время ввода', async () => {
+  it('проверка не вызывается во время ввода', async () => {
     const bodies = checkAccountRequests()
     const { user, phone } = await openForm()
     await user.type(phone, '79991234567')

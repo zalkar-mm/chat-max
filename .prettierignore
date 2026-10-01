@@ -1,10 +1,7 @@
 dist
 node_modules
 package-lock.json
-design
 public/mockServiceWorker.js
-spints
-sprints
 coverage
 playwright-report
 test-results

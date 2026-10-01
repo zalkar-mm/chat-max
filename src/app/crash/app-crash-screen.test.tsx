@@ -30,19 +30,19 @@ const renderCrash = () => {
   return router
 }
 
-describe('Задача 7 — экран «Что-то пошло не так»', () => {
+describe('Экран «Что-то пошло не так»', () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('1: ошибка в компоненте → экран сбоя вместо белого', () => {
+  it('ошибка в компоненте → экран сбоя вместо белого', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     renderCrash()
     expect(screen.getByRole('heading', { name: 'Что-то пошло не так' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Перезагрузить' })).toBeInTheDocument()
   })
 
-  it('4: подробности ошибки — только в режиме разработки, под раскрывашкой', async () => {
+  it('подробности ошибки — только в режиме разработки, под раскрывашкой', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     renderCrash()
     expect(import.meta.env.DEV).toBe(true)
@@ -51,7 +51,7 @@ describe('Задача 7 — экран «Что-то пошло не так»',
     expect(screen.getByText(/boom/)).toBeInTheDocument()
   })
 
-  it('3: «Выйти» → экран входа, сессия очищена', async () => {
+  it('«Выйти» → экран входа, сессия очищена', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     useSessionStore.getState().startSession({
       credentials: { idInstance: '1', apiTokenInstance: 't', apiUrl: 'https://x' },

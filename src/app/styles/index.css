@@ -3,7 +3,7 @@
 
 /*
  * Tailwind ссылается на токены дизайна (src/styles/tokens.css) и не хранит своих значений.
- * Палитра, радиусы и брейкпоинты Tailwind по умолчанию отключены: только то, что есть в спеке.
+ * Палитра, радиусы и брейкпоинты Tailwind по умолчанию отключены: только то, что есть в дизайне.
  */
 @theme {
   --color-*: initial;
@@ -13,10 +13,10 @@
   --breakpoint-md: 900px;
   --breakpoint-xl: 1280px;
 
-  /* Абсолютный белый — по спеке: иконка логотипа, текст и иконки на акценте в обеих темах. */
+  /* Абсолютный белый: иконка логотипа, текст и иконки на акценте в обеих темах. */
   --color-white: #fff;
   --animate-spinner: spin 800ms linear infinite;
-  /* Появления по DS §5 (motion): только opacity/transform; при reduced-motion токены длительности = 0. */
+  /* Появления: только opacity/transform; при reduced-motion токены длительности = 0. */
   --animate-appear: appear var(--dur-base) var(--ease-out) both;
   --animate-appear-fast: appear var(--dur-fast) var(--ease-out) both;
   --animate-pop: pop var(--dur-fast) var(--ease-out) both;
@@ -24,7 +24,7 @@
   --animate-sheet-in: sheet-in var(--dur-base) var(--ease-out) both;
   --animate-modal-in: modal-in var(--dur-base) var(--ease-out) both;
   --animate-fade-in: fade-in var(--dur-fast) var(--ease-out) both;
-  /* Индикатор загрузки появляется, только если действие дольше 300 мс (DS §5). */
+  /* Индикатор загрузки появляется, только если действие дольше 300 мс. */
   --animate-spinner-delayed: spin 800ms linear infinite, fade-in 1ms linear 300ms both;
 
   @keyframes appear {
@@ -61,7 +61,7 @@
   }
 }
 
-/* Телефон в альбомной ориентации (DS §1): шапки и ячейки ниже, поле ввода короче. */
+/* Телефон в альбомной ориентации: шапки и ячейки ниже, поле ввода короче. */
 @custom-variant phone-landscape (@media (max-height: 480px) and (orientation: landscape));
 /* Узкие экраны 320–360: горизонтальные отступы 16 → 12. */
 @custom-variant narrow (@media (max-width: 360px));
@@ -187,7 +187,7 @@
     font: var(--font-body);
   }
 }
-/* Единое фокус-кольцо DS §2: двойное, видно на любом фоне. outline прозрачный — для режима высокой контрастности. */
+/* Единое фокус-кольцо: двойное, видно на любом фоне. outline прозрачный — для режима высокой контрастности. */
 @utility focus-ring {
   &:focus-visible {
     outline: 2px solid transparent;
@@ -224,7 +224,7 @@
 
 @layer base {
   /*
-   * Экран чатов — h-dvh, прокручиваются только списки (без «прыжков» адресной строки Safari, DS §1).
+   * Экран чатов — h-dvh, прокручиваются только списки (без «прыжков» адресной строки Safari).
    * Экраны входа и статусов выше окна (альбомная, зум 200 %) прокручиваются обычным образом.
    */
   html,
@@ -237,7 +237,7 @@
     @apply bg-surface typo-body text-primary antialiased;
   }
 
-  /* Единый фокус DS §2 по умолчанию для всего интерактивного; поля ввода задают своё кольцо. */
+  /* Единый фокус по умолчанию для всего интерактивного; поля ввода задают своё кольцо. */
   :focus-visible {
     outline: 2px solid transparent;
     box-shadow: var(--focus-ring);
@@ -258,5 +258,5 @@
     touch-action: manipulation;
   }
 
-  /* Сброс анимаций при reduced-motion — в tokens.css (Sprint 4). */
+  /* Сброс анимаций при reduced-motion — в tokens.css. */
 }

@@ -9,7 +9,7 @@ type SkipLinkProps = Omit<ComponentProps<'a'>, 'href' | 'onClick' | 'children'> 
 }
 
 /**
- * Ссылка пропуска навигации (DS §2): первая по Tab, видна только в фокусе.
+ * Ссылка пропуска навигации: первая по Tab, видна только в фокусе.
  * Фокус переводим сами: переход по якорю добавил бы запись в историю роутера.
  */
 export function SkipLink({ targetId, className, children, ...props }: SkipLinkProps) {

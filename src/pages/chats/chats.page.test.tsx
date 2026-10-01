@@ -23,8 +23,8 @@ const openMainScreen = async (idInstance?: string) => {
   return view
 }
 
-describe('Задача 4 — выход', () => {
-  it('1–2: «Выйти» → вход с пустыми полями, сессии нет ни в одном хранилище', async () => {
+describe('Выход', () => {
+  it('«Выйти» → вход с пустыми полями, сессии нет ни в одном хранилище', async () => {
     storeSession('3100000001', localStorage)
     const { user } = await renderApp()
     await screen.findByRole('heading', { name: 'Чаты' })
@@ -37,7 +37,7 @@ describe('Задача 4 — выход', () => {
   })
 })
 
-describe('Задача 5 — каркас главного экрана', () => {
+describe('Каркас главного экрана', () => {
   it('пустой список, «Выберите чат» и idInstance в шапке', async () => {
     await openMainScreen('3100000001')
     expect(screen.getByText('Здесь появятся ваши чаты')).toBeInTheDocument()
@@ -57,12 +57,12 @@ describe('Задача 5 — каркас главного экрана', () => 
   })
 })
 
-describe('Задача 6 — баннеры', () => {
+describe('Баннеры', () => {
   afterEach(() => {
     vi.useRealTimers()
   })
 
-  it('1–2: офлайн → баннер; сеть вернулась → баннер исчез, 3 с «Соединение восстановлено»', async () => {
+  it('офлайн → баннер; сеть вернулась → баннер исчез, 3 с «Соединение восстановлено»', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     await openMainScreen()
 
@@ -81,7 +81,7 @@ describe('Задача 6 — баннеры', () => {
     expect(screen.queryByText('Соединение восстановлено')).not.toBeInTheDocument()
   })
 
-  it('3: suspended → жёлтый баннер; «×» скрывает; после F5 снова виден', async () => {
+  it('suspended → жёлтый баннер; «×» скрывает; после F5 снова виден', async () => {
     const { user, unmount } = await openMainScreen('3100000002')
     const warning = 'Аккаунт MAX временно ограничен: сообщения можно отправлять только контактам'
     expect(screen.getByText(warning)).toBeInTheDocument()
@@ -94,7 +94,7 @@ describe('Задача 6 — баннеры', () => {
     expect(await screen.findByText(warning)).toBeInTheDocument()
   })
 
-  it('4: оба баннера — ошибка сверху', async () => {
+  it('оба баннера — ошибка сверху', async () => {
     await openMainScreen('3100000002')
     act(() => {
       window.dispatchEvent(new Event('offline'))

@@ -5,7 +5,7 @@ type SpinnerSize = 20 | 24 | 32
 type SpinnerProps = {
   size?: SpinnerSize
   className?: string
-  /** Показ с задержкой 300 мс (DS §5): быстрые действия не мигают индикатором. */
+  /** Показ с задержкой 300 мс: быстрые действия не мигают индикатором. */
   isDelayed?: boolean
 }
 

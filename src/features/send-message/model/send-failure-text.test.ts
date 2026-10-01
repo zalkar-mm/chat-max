@@ -8,7 +8,7 @@ import { SEND_FAILURE_TEXT } from './send-failure-text'
 
 const textFor = (kind: ApiErrorKind) => SEND_FAILURE_TEXT[toSendFailure(kind)]
 
-// Таблица «Ошибки → текст под пузырём» (спринт 2, задача 5): ответ API → текст и «Повторить».
+// Таблица «Ошибки → текст под пузырём»: ответ API → текст и «Повторить».
 describe('ошибка отправки → текст под пузырём', () => {
   it.each([
     [ApiErrorKind.Offline, 'Нет соединения.', true],
@@ -25,7 +25,7 @@ describe('ошибка отправки → текст под пузырём', (
     expect(textFor(kind)).toEqual({ text, canRetry })
   })
 
-  it('статус «не доставлено» из очереди (спринт 3) → «Не доставлено.» с «Повторить»', () => {
+  it('статус «не доставлено» из очереди → «Не доставлено.» с «Повторить»', () => {
     expect(SEND_FAILURE_TEXT.undelivered).toEqual({ text: 'Не доставлено.', canRetry: true })
   })
 })

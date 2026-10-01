@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 
-import { SECURITY_HEADERS, toHeadersFile } from './config/security-headers.ts'
+import { CSP_META_CONTENT, SECURITY_HEADERS, toHeadersFile } from './config/security-headers.ts'
 
 /** Заголовки безопасности в `dist/_headers` для хостинга статики. */
 const securityHeadersFile = (): Plugin => ({
@@ -16,8 +16,51 @@ const securityHeadersFile = (): Plugin => ({
   },
 })
 
+/**
+ * CSP ещё и `<meta>` в собранном index.html: хостинг без своих заголовков тоже
+ * ограничивает скрипты и запросы. В dev не ставим — мешал бы HMR и MSW.
+ */
+const cspMeta = (): Plugin => ({
+  name: 'csp-meta',
+  apply: 'build',
+  transformIndexHtml: () => [
+    {
+      tag: 'meta',
+      attrs: { 'http-equiv': 'Content-Security-Policy', content: CSP_META_CONTENT },
+      injectTo: 'head-prepend',
+    },
+  ],
+})
+
+/** Превью ссылки в мессенджерах. Telegram берёт только абсолютный адрес картинки. */
+const socialMeta = (): Plugin => ({
+  name: 'social-meta',
+  apply: 'build',
+  transformIndexHtml: () => {
+    // SITE_URL задаётся вручную; на Netlify адрес сайта приходит в URL.
+    const siteUrl = process.env.SITE_URL ?? process.env.URL
+    const image = new URL(
+      'og-cover.png',
+      siteUrl ? `${siteUrl.replace(/\/$/, '')}/` : 'https://localhost/',
+    ).href
+    const meta = (property: string, content: string) => ({
+      tag: 'meta',
+      attrs: { property, content },
+      injectTo: 'head' as const,
+    })
+    return [
+      meta('og:type', 'website'),
+      meta('og:title', 'MAX-чат — GREEN-API'),
+      meta('og:description', 'Отправка и получение текстовых сообщений в MAX через GREEN-API'),
+      ...(siteUrl ? [meta('og:image', image), meta('twitter:card', 'summary_large_image')] : []),
+    ]
+  },
+})
+
 export default defineConfig({
-  plugins: [react(), tailwindcss(), securityHeadersFile()],
+  // Подпапка сайта, если приложение живёт не в корне (например, /<репозиторий>/).
+  base: process.env.BASE_PATH ?? '/',
+  plugins: [react(), tailwindcss(), securityHeadersFile(), cspMeta(), socialMeta()],
   // Локальный просмотр сборки — с теми же заголовками, что на хостинге.
   preview: { headers: SECURITY_HEADERS },
   build: { sourcemap: false },
@@ -34,7 +77,7 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',
-      // Порог — на доменную логику и слой API (sprint-4, задача 7). UI покрыт компонентными тестами отдельно.
+      // Порог — на доменную логику и слой API. UI покрыт компонентными тестами отдельно.
       include: [
         'src/entities/**/{model,lib,api}/**/*.ts',
         'src/features/**/model/**/*.ts',

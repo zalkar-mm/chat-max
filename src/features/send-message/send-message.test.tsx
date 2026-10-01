@@ -33,13 +33,13 @@ const sendRequests = () => {
   return bodies
 }
 
-describe('Спринт 2, задача 4 — лента', () => {
-  it('1: новый чат → «Напишите первое сообщение»', async () => {
+describe('Лента сообщений', () => {
+  it('новый чат → «Напишите первое сообщение»', async () => {
     await openChat()
     expect(screen.getByText('Напишите первое сообщение')).toBeInTheDocument()
   })
 
-  it('2–4: своё сообщение со временем; HTML буквально; переносы строк сохранены', async () => {
+  it('своё сообщение со временем; HTML буквально; переносы строк сохранены', async () => {
     const { user, composer } = await openChat()
     await user.type(composer, '<b>привет</b>{Shift>}{Enter}{/Shift}вторая строка{Enter}')
     const bubbleText = await within(feed()).findByText(/<b>привет<\/b>/)
@@ -48,7 +48,7 @@ describe('Спринт 2, задача 4 — лента', () => {
     expect(within(feed()).getByText(/^, (отправляется|отправлено)$/)).toBeInTheDocument()
   })
 
-  it('7: после отправки лента прокручивается к новому сообщению', async () => {
+  it('после отправки лента прокручивается к новому сообщению', async () => {
     const scrollTo = vi.spyOn(Element.prototype, 'scrollTo')
     const { user, composer } = await openChat()
     await user.type(composer, 'Привет{Enter}')
@@ -58,8 +58,8 @@ describe('Спринт 2, задача 4 — лента', () => {
   })
 })
 
-describe('Спринт 2, задача 5 — поле ввода', () => {
-  it('1: пусто или только пробелы → кнопка неактивна, Enter ничего не делает', async () => {
+describe('Поле ввода', () => {
+  it('пусто или только пробелы → кнопка неактивна, Enter ничего не делает', async () => {
     const bodies = sendRequests()
     const { user, composer, sendButton } = await openChat()
     expect(sendButton).toBeDisabled()
@@ -68,7 +68,7 @@ describe('Спринт 2, задача 5 — поле ввода', () => {
     expect(bodies).toEqual([])
   })
 
-  it('2: Shift+Enter добавляет перенос и не отправляет', async () => {
+  it('Shift+Enter добавляет перенос и не отправляет', async () => {
     const bodies = sendRequests()
     const { user, composer } = await openChat()
     await user.type(composer, 'a{Shift>}{Enter}{/Shift}b')
@@ -93,7 +93,7 @@ describe('Спринт 2, задача 5 — поле ввода', () => {
     expect(composer).toHaveValue('')
   })
 
-  it('4–5: счётчик с 3800 символов; 4001 → «Максимум 4000 символов», отправка невозможна', async () => {
+  it('счётчик с 3800 символов; 4001 → «Максимум 4000 символов», отправка невозможна', async () => {
     const { user, composer, sendButton } = await openChat()
     await user.click(composer)
     await user.paste('x'.repeat(3799))
@@ -106,7 +106,7 @@ describe('Спринт 2, задача 5 — поле ввода', () => {
     expect(sendButton).toBeDisabled()
   })
 
-  it('6: инстанс перешёл в notAuthorized → поле неактивно с пояснением', async () => {
+  it('инстанс перешёл в notAuthorized → поле неактивно с пояснением', async () => {
     const { composer } = await openChat()
     act(() => {
       useSessionStore.getState().setInstanceState('notAuthorized')
@@ -126,12 +126,12 @@ describe('Спринт 2, задача 5 — поле ввода', () => {
   })
 })
 
-describe('Спринт 2, задача 6 — отправка и статусы', () => {
+describe('Отправка и статусы', () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('1–2: сразу «отправляется», затем «отправлено»; в запросе chatId и текст без пробелов по краям', async () => {
+  it('сразу «отправляется», затем «отправлено»; в запросе chatId и текст без пробелов по краям', async () => {
     const bodies = sendRequests()
     const { user, composer } = await openChat()
     await user.type(composer, '  Привет  {Enter}')
@@ -141,7 +141,7 @@ describe('Спринт 2, задача 6 — отправка и статусы'
     expect(bodies).toEqual([{ chatId: '191234567', message: 'Привет' }])
   })
 
-  it('3: три сообщения подряд уходят по порядку, в полёте не больше одного', async () => {
+  it('три сообщения подряд уходят по порядку, в полёте не больше одного', async () => {
     let inFlight = 0
     let maxInFlight = 0
     const order: string[] = []
@@ -167,7 +167,7 @@ describe('Спринт 2, задача 6 — отправка и статусы'
     expect(maxInFlight).toBe(1)
   })
 
-  it('4: нет сети → «Нет соединения. Повторить»; «Повторить» → отправлено, без дубля', async () => {
+  it('нет сети → «Нет соединения. Повторить»; «Повторить» → отправлено, без дубля', async () => {
     const onLine = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
     server.use(http.post('*/waInstance:id/sendMessage/:token', () => HttpResponse.error()))
     const { user, composer } = await openChat()
@@ -181,7 +181,7 @@ describe('Спринт 2, задача 6 — отправка и статусы'
     expect(within(feed()).getAllByText('Привет')).toHaveLength(1)
   })
 
-  it('5: 403 → текст про ограничение и жёлтый баннер', async () => {
+  it('403 → текст про ограничение и жёлтый баннер', async () => {
     const { user, composer } = await openChat()
     await user.type(composer, 'Привет #403{Enter}')
     expect(
@@ -196,7 +196,7 @@ describe('Спринт 2, задача 6 — отправка и статусы'
     ).toBeInTheDocument()
   })
 
-  it('6: 466 → текст про лимит, «Повторить» нет', async () => {
+  it('466 → текст про лимит, «Повторить» нет', async () => {
     const { user, composer } = await openChat()
     await user.type(composer, 'Привет #466{Enter}')
     expect(
@@ -205,7 +205,7 @@ describe('Спринт 2, задача 6 — отправка и статусы'
     expect(within(feed()).queryByRole('button', { name: 'Повторить' })).not.toBeInTheDocument()
   })
 
-  it('7: во время отправки можно печатать следующее сообщение', async () => {
+  it('во время отправки можно печатать следующее сообщение', async () => {
     const { user, composer } = await openChat()
     await user.type(composer, 'первое{Enter}второе')
     expect(composer).toHaveValue('второе')
@@ -213,8 +213,8 @@ describe('Спринт 2, задача 6 — отправка и статусы'
   })
 })
 
-describe('Спринт 2, задача 3 — список чатов', () => {
-  it('1–2: новые сверху; отправка поднимает чат наверх с «Вы: …» и временем', async () => {
+describe('Список чатов', () => {
+  it('новые сверху; отправка поднимает чат наверх с «Вы: …» и временем', async () => {
     const view = await renderSignedInApp()
     await createChatViaForm(view.user, '79991111111')
     await createChatViaForm(view.user, '79992222222')
@@ -236,7 +236,7 @@ describe('Спринт 2, задача 3 — список чатов', () => {
     expect(titles()[0]).toMatch(/\d{2}:\d{2}/)
   })
 
-  it('5: список управляется с клавиатуры — Enter на элементе открывает чат', async () => {
+  it('список управляется с клавиатуры — Enter на элементе открывает чат', async () => {
     const view = await renderSignedInApp()
     await createChatViaForm(view.user, '79991111111')
     await createChatViaForm(view.user, '79992222222')
@@ -256,7 +256,7 @@ describe('Спринт 2, задача 3 — список чатов', () => {
     expect(screen.getByRole('navigation', { name: 'Чаты' })).toBeInTheDocument()
   })
 
-  it('4: активный чат подсвечен', async () => {
+  it('активный чат подсвечен', async () => {
     const view = await renderSignedInApp()
     await createChatViaForm(view.user, '79991111111')
     const list = screen.getByRole('navigation', { name: 'Чаты' })

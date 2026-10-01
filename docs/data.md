@@ -1,7 +1,7 @@
 # Данные — GREEN-API, запросы, состояние
 
 Смежные темы: [architecture.md](architecture.md), [code-style.md](code-style.md), [testing.md](testing.md).
-Источник требований — спринты в `design/` и `spints/`; здесь — как это устроено в коде.
+Как работа с API и состоянием устроена в коде.
 
 ## 1. Контракт GREEN-API
 
@@ -12,8 +12,8 @@ URL метода: `{apiUrl}/waInstance{idInstance}/{method}/{apiTokenInstance}`.
 | `getStateInstance`    | `GET`    | вход, восстановление сессии, повторы | `{ stateInstance }` — статус инстанса                           |
 | `checkAccount`        | `POST`   | создание чата                        | body `{ phoneNumber }` → есть ли аккаунт MAX и его `chatId`     |
 | `sendMessage`         | `POST`   | отправка                             | body `{ chatId, message }` → `{ idMessage }`, текст ≤ 4000      |
-| `receiveNotification` | `GET`    | получение (спринт 3)                 | long-poll `?receiveTimeout=N`; `null` или `{ receiptId, body }` |
-| `deleteNotification`  | `DELETE` | получение (спринт 3)                 | `/{receiptId}` — подтвердить обработку                          |
+| `receiveNotification` | `GET`    | получение                            | long-poll `?receiveTimeout=N`; `null` или `{ receiptId, body }` |
+| `deleteNotification`  | `DELETE` | получение                            | `/{receiptId}` — подтвердить обработку                          |
 
 Статусы инстанса: `authorized`, `suspended` (пускаем + баннер), `notAuthorized`, `starting`, `blocked`,
 `pendingPassword` (блокирующие экраны). Неизвестное значение трактуем как `notAuthorized`.
@@ -30,22 +30,22 @@ URL метода: `{apiUrl}/waInstance{idInstance}/{method}/{apiTokenInstance}`.
   URL собирает `buildMethodUrl(credentials, method, suffix?)` из `shared/api/`.
 - Любая ошибка транспорта приводится к `ApiError` (`shared/api/api-error.ts`) функцией `toApiError(error)`:
 
-| `kind`          | Когда                                                                        |
-| --------------- | ---------------------------------------------------------------------------- |
-| `offline`       | `navigator.onLine === false` / нет ответа                                    |
-| `timeout`       | 15 с без ответа                                                              |
-| `unauthorized`  | 401 / 404 — неверный idInstance или токен                                    |
-| `forbidden`     | 403 — на входе = неверные креды, при отправке = аккаунт ограничен (спринт 2) |
-| `badRequest`    | 400                                                                          |
-| `quotaExceeded` | 466 — лимит тарифа                                                           |
-| `checkLimit`    | 469 — лимит проверок номеров                                                 |
-| `rateLimited`   | 429                                                                          |
-| `server`        | 5xx                                                                          |
-| `aborted`       | запрос отменён — не ошибка для UI                                            |
-| `unknown`       | всё остальное, невалидный ответ                                              |
+| `kind`          | Когда                                                             |
+| --------------- | ----------------------------------------------------------------- |
+| `offline`       | `navigator.onLine === false` / нет ответа                         |
+| `timeout`       | 15 с без ответа                                                   |
+| `unauthorized`  | 401 / 404 — неверный idInstance или токен                         |
+| `forbidden`     | 403 — на входе = неверные креды, при отправке = аккаунт ограничен |
+| `badRequest`    | 400                                                               |
+| `quotaExceeded` | 466 — лимит тарифа                                                |
+| `checkLimit`    | 469 — лимит проверок номеров                                      |
+| `rateLimited`   | 429                                                               |
+| `server`        | 5xx                                                               |
+| `aborted`       | запрос отменён — не ошибка для UI                                 |
+| `unknown`       | всё остальное, невалидный ответ                                   |
 
 - Текст для пользователя — **не в `ApiError`**. Каждая фича держит свою карту
-  `Record<ApiErrorKind, string>` (тексты в спринтах разные для входа, создания чата и отправки).
+  `Record<ApiErrorKind, string>` (тексты разные для входа, создания чата и отправки).
 - Сырой текст ответа сервера пользователю не показываем никогда.
 
 ## 3. Repository — только HTTP
@@ -71,7 +71,7 @@ export const sessionRepository = {
 - Хук возвращает результат `useMutation`/`useQuery` как есть, без переупаковки.
 - Если появляется `useQuery` — ключ только через фабрику `<entity>Keys`, `staleTime` задан осознанно.
 
-## 4.1 Уведомления (спринт 3)
+## 4.1 Уведомления
 
 - `entities/notification`: `receiveNotification` / `deleteNotification` + разбор тела zod-схемами в доменное
   событие `NotificationEvent` (discriminated union по `kind`). Нераспознанное событие — `{ kind: 'unknown' }`,
@@ -85,7 +85,7 @@ export const sessionRepository = {
 
 ## 5. Фоновые процессы — сервисы без React
 
-Автоперепроверка `starting` (10 с × 30), очередь отправки, опрос уведомлений (спринт 3) — **не хуки и не `useEffect`-циклы**,
+Автоперепроверка `starting` (10 с × 30), очередь отправки, опрос уведомлений — **не хуки и не `useEffect`-циклы**,
 а модули `model/` с явным `start/stop`:
 
 - Один экземпляр на процесс; повторный `start` без `stop` — no-op (StrictMode монтирует дважды).

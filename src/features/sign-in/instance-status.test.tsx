@@ -26,24 +26,24 @@ const respondWithStates = (...states: string[]) => {
   )
 }
 
-describe('Задача 2 — статус инстанса', () => {
+describe('Статус инстанса при входе', () => {
   afterEach(() => {
     vi.useRealTimers()
     vi.restoreAllMocks()
   })
 
-  it('1: authorized → главный экран', async () => {
+  it('authorized → главный экран', async () => {
     await signIn('3100000001')
     expect(await screen.findByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
   })
 
-  it('2: suspended → главный экран, статус сохранён в сессии', async () => {
+  it('suspended → главный экран, статус сохранён в сессии', async () => {
     await signIn('3100000002')
     await screen.findByRole('heading', { name: 'Чаты' })
     expect(useSessionStore.getState().instanceState).toBe('suspended')
   })
 
-  it('3: notAuthorized → инструкция; «Проверить снова» делает новый запрос; креды не сохранены', async () => {
+  it('notAuthorized → инструкция; «Проверить снова» делает новый запрос; креды не сохранены', async () => {
     const { user } = await signIn('3100000003')
     expect(
       await screen.findByRole('heading', { name: 'Инстанс не подключён к MAX' }),
@@ -73,7 +73,7 @@ describe('Задача 2 — статус инстанса', () => {
     ).toBeInTheDocument()
   })
 
-  it('4: starting → автоперепроверка каждые 10 с и автоматический вход', async () => {
+  it('starting → автоперепроверка каждые 10 с и автоматический вход', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     respondWithStates('starting', 'starting', 'authorized')
     await signIn('3100000001')
@@ -85,7 +85,7 @@ describe('Задача 2 — статус инстанса', () => {
     expect(await screen.findByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
   })
 
-  it('5: после 30 неудачных перепроверок — текст про перезапуск, опрос остановлен', async () => {
+  it('после 30 неудачных перепроверок — текст про перезапуск, опрос остановлен', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     let requests = 0
     server.use(
@@ -106,7 +106,7 @@ describe('Задача 2 — статус инстанса', () => {
     expect(requests).toBe(afterGiveUp)
   })
 
-  it('6: «Отмена» останавливает автопроверку', async () => {
+  it('«Отмена» останавливает автопроверку', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     let requests = 0
     server.use(
@@ -124,7 +124,7 @@ describe('Задача 2 — статус инстанса', () => {
     expect(requests).toBe(1)
   })
 
-  it('7: неверный токен → ошибка, поля заполнены', async () => {
+  it('неверный токен → ошибка, поля заполнены', async () => {
     await signIn('3100000001', 'wrong')
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Неверный idInstance или apiTokenInstance',
@@ -132,7 +132,7 @@ describe('Задача 2 — статус инстанса', () => {
     expect(screen.getByLabelText('apiTokenInstance')).toHaveValue('wrong')
   })
 
-  it('8: нет интернета → «Нет соединения с интернетом»', async () => {
+  it('нет интернета → «Нет соединения с интернетом»', async () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
     server.use(http.get('*/waInstance:id/getStateInstance/:token', () => HttpResponse.error()))
     await signIn('3100000001')
@@ -146,7 +146,7 @@ describe('Задача 2 — статус инстанса', () => {
     )
   })
 
-  it('9: токена нет ни в тексте страницы, ни в URL', async () => {
+  it('токена нет ни в тексте страницы, ни в URL', async () => {
     const { router } = await signIn('3100000001', 'wrong')
     await screen.findByRole('alert')
     expect(document.body.textContent).not.toContain('wrong')

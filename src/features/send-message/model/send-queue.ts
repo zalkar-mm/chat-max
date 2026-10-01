@@ -28,7 +28,7 @@ const sendQueue = createSendQueue(
     onSent: markMessageSent,
     onFailed: (id, failure, kind) => {
       markMessageFailed(id, failure ?? 'failed')
-      // 403 при отправке — аккаунт ограничен: показываем жёлтый баннер спринта 1.
+      // 403 при отправке — аккаунт ограничен: показываем жёлтый баннер ограничения.
       if (kind === ApiErrorKind.Forbidden) {
         useSessionStore.getState().setInstanceState(InstanceState.Suspended)
       }

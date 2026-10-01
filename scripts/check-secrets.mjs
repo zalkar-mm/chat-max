@@ -7,7 +7,9 @@
  * idInstance (10 цифр) не ищем: он не секрет без токена и путается с метками времени.
  *
  * Запуск: `npm run check:secrets` — все файлы git (отслеживаемые и новые, кроме .gitignore);
- * `node scripts/check-secrets.mjs <файлы…>` — только переданные (так зовёт lint-staged).
+ * `node scripts/check-secrets.mjs <файлы…>` — только переданные (так зовёт lint-staged);
+ * `node scripts/check-secrets.mjs --history` — все добавленные строки во всей истории git (CI): токен,
+ * добавленный и удалённый внутри одного push, тоже найдётся.
  * Ложное срабатывание — пометка `check-secrets: allow` в той же строке. Найденное значение
  * в вывод не попадает целиком, чтобы не утечь в логи CI.
  */
@@ -44,16 +46,38 @@ function readText(file) {
 const mask = (value) => `${value.slice(0, 4)}…(${value.length} симв.)`
 
 const findings = []
-for (const file of listFiles(process.argv.slice(2))) {
-  if (SKIPPED.test(file)) continue
-  const text = readText(file)
-  if (text === null) continue
+
+function scanLines(text, where) {
   text.split('\n').forEach((line, index) => {
     if (line.includes(ALLOW_MARKER)) return
     for (const match of line.matchAll(TOKEN_PATTERN)) {
-      findings.push(`${file}:${index + 1}: похоже на apiTokenInstance — ${mask(match[0])}`)
+      findings.push(`${where(index, line)}: похоже на apiTokenInstance — ${mask(match[0])}`)
     }
   })
+}
+
+if (process.argv.includes('--history')) {
+  // Только добавленные строки текстовых диффов всех коммитов: бинарные файлы git в патч не выводит.
+  const log = execFileSync('git', ['log', '--all', '-p', '--format=commit %h', '--no-color'], {
+    encoding: 'utf8',
+    maxBuffer: 512 * 1024 * 1024,
+  })
+  let commit = ''
+  const added = log
+    .split('\n')
+    .map((line) => {
+      if (line.startsWith('commit ')) commit = line.slice(7)
+      return line.startsWith('+') && !line.startsWith('+++') ? `${commit}\t${line}` : ''
+    })
+    .join('\n')
+  scanLines(added, (_, line) => `коммит ${line.split('\t')[0]}`)
+} else {
+  for (const file of listFiles(process.argv.slice(2))) {
+    if (SKIPPED.test(file)) continue
+    const text = readText(file)
+    if (text === null) continue
+    scanLines(text, (index) => `${file}:${index + 1}`)
+  }
 }
 
 if (findings.length > 0) {

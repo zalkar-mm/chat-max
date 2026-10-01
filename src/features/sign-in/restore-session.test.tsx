@@ -16,7 +16,7 @@ const storedCredentials = (idInstance = '3100000001') =>
     apiUrl: 'https://3100.api.green-api.com',
   })
 
-describe('Задача 3 — сохранение и восстановление сессии', () => {
+describe('Сохранение и восстановление сессии', () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
@@ -40,20 +40,20 @@ describe('Задача 3 — сохранение и восстановлени�
     expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull()
   })
 
-  it('1: сохранённая сессия → после проверки главный экран без ввода', async () => {
+  it('сохранённая сессия → после проверки главный экран без ввода', async () => {
     sessionStorage.setItem(STORAGE_KEY, storedCredentials())
     await renderApp()
     expect(await screen.findByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
   })
 
-  it('6: при старте с сохранёнными данными форма входа не мелькает', async () => {
+  it('при старте с сохранёнными данными форма входа не мелькает', async () => {
     localStorage.setItem(STORAGE_KEY, storedCredentials())
     await renderApp()
     expect(screen.queryByLabelText('idInstance')).not.toBeInTheDocument()
     await screen.findByRole('heading', { name: 'Чаты' })
   })
 
-  it('4: токен сменили → вход с «Сессия недействительна», хранилище очищено', async () => {
+  it('токен сменили → вход с «Сессия недействительна», хранилище очищено', async () => {
     localStorage.setItem(STORAGE_KEY, storedCredentials())
     server.use(
       http.get(
@@ -67,7 +67,7 @@ describe('Задача 3 — сохранение и восстановлени�
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
   })
 
-  it('5: нет интернета при старте → «Нет соединения»; «Повторить» пускает в приложение', async () => {
+  it('нет интернета при старте → «Нет соединения»; «Повторить» пускает в приложение', async () => {
     sessionStorage.setItem(STORAGE_KEY, storedCredentials())
     const onLine = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
     server.use(http.get('*/waInstance:id/getStateInstance/:token', () => HttpResponse.error()))

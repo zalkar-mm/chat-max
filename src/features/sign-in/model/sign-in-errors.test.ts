@@ -8,7 +8,7 @@ import {
   type SignInErrorKind,
 } from './sign-in-errors'
 
-// Таблица ошибок входа (спринт 1, задача 2): неверные креды / 429 / 5xx / офлайн / таймаут.
+// Таблица ошибок входа: неверные креды / 429 / 5xx / офлайн / таймаут.
 const EXPECTED: [SignInErrorKind, string][] = [
   [ApiErrorKind.Unauthorized, 'Неверный idInstance или apiTokenInstance'],
   [ApiErrorKind.Forbidden, 'Неверный idInstance или apiTokenInstance'],

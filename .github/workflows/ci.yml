@@ -14,15 +14,18 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Вся история — для поиска секретов во всех коммитах, а не только в последнем.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
 
-      # Креды GREEN-API в репозитории — сразу красный CI (sprint-4, задача 6).
+      # Креды GREEN-API в репозитории — сразу красный CI.
       - name: Secret scan
-        run: npm run check:secrets
+        run: npm run check:secrets && node scripts/check-secrets.mjs --history
       - name: Lint
         run: npm run lint
       - name: Typecheck

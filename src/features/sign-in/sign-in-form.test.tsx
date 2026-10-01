@@ -17,14 +17,14 @@ const countStateRequests = () => {
   return counter
 }
 
-describe('Задача 1 — форма входа', () => {
-  it('1: пустая форма — «Войти» неактивна', async () => {
+describe('Форма входа', () => {
+  it('пустая форма — «Войти» неактивна', async () => {
     await renderApp({ path: '/sign-in' })
     expect(await screen.findByRole('heading', { name: 'Вход' })).toBeInTheDocument()
     expect(submitButton()).toBeDisabled()
   })
 
-  it('2: пробелы по краям idInstance обрезаются при уходе из поля', async () => {
+  it('пробелы по краям idInstance обрезаются при уходе из поля', async () => {
     const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), ' 3100000000 ')
     await user.tab()
@@ -32,7 +32,7 @@ describe('Задача 1 — форма входа', () => {
     expect(screen.queryByText('idInstance состоит только из цифр')).not.toBeInTheDocument()
   })
 
-  it('3: не-цифры в idInstance — ошибка после ухода из поля', async () => {
+  it('не-цифры в idInstance — ошибка после ухода из поля', async () => {
     const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), '31a0')
     await user.tab()
@@ -41,7 +41,7 @@ describe('Задача 1 — форма входа', () => {
     expect(idInstanceField()).toHaveAccessibleDescription('idInstance состоит только из цифр')
   })
 
-  it('4: токен скрыт, «глаз» показывает и скрывает его', async () => {
+  it('токен скрыт, «глаз» показывает и скрывает его', async () => {
     const { user } = await renderApp({ path: '/sign-in' })
     expect(tokenField()).toHaveAttribute('type', 'password')
     await user.click(screen.getByRole('button', { name: 'Показать токен' }))
@@ -50,7 +50,7 @@ describe('Задача 1 — форма входа', () => {
     expect(tokenField()).toHaveAttribute('type', 'password')
   })
 
-  it('5: пробел внутри токена — ошибка, запрос не уходит', async () => {
+  it('пробел внутри токена — ошибка, запрос не уходит', async () => {
     const requests = countStateRequests()
     const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), '3100000001')
@@ -60,14 +60,14 @@ describe('Задача 1 — форма входа', () => {
     expect(requests.value).toBe(0)
   })
 
-  it('6: Enter в поле токена запускает вход', async () => {
+  it('Enter в поле токена запускает вход', async () => {
     const { user } = await renderApp({ path: '/sign-in' })
     await user.type(idInstanceField(), '3100000001')
     await user.type(tokenField(), 'token{Enter}')
     expect(await screen.findByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
   })
 
-  it('7: повторный клик во время проверки не отправляет второй запрос', async () => {
+  it('повторный клик во время проверки не отправляет второй запрос', async () => {
     server.use(
       http.get('*/waInstance:id/getStateInstance/:token', async () => {
         await new Promise((resolve) => setTimeout(resolve, 50))

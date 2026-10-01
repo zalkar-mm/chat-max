@@ -90,7 +90,7 @@ features/<slug>/
 ### `shared/`
 
 - `shared/api/` — http-клиент GREEN-API и типизированная ошибка. Без доменных репозиториев.
-- `shared/ui/` — примитивы без домена по дизайн-спеке ([ui §3](ui.md#3-примитивы-sharedui)).
+- `shared/ui/` — примитивы без домена по дизайну ([ui §3](ui.md#3-примитивы-sharedui)).
 - `shared/lib/` — утилиты (`cn.ts`, `notify.ts`, `format-time.ts`).
 - `shared/config/` — env и константы конфигурации.
 - `shared/consts/` — `routes.ts` и прочие константы.

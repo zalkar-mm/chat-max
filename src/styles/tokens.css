@@ -67,7 +67,7 @@
   --avatar-header: 36px;
 
   /* accent (same in both schemes) */
-  /* sprint-4 a11y: белый текст на #007aff — 4.0:1, на #0070eb — 4.65:1 (кнопки, счётчики). Ховер темнее. */
+  /* Контраст: белый текст на #007aff — 4.0:1, на #0070eb — 4.65:1 (кнопки, счётчики). Ховер темнее. */
   --accent: #0070eb;
   --accent-hover: #0066d6;
   --accent-pressed: #005fc4;
@@ -96,10 +96,10 @@
 
   --text-primary: #060708;
   --text-secondary: #060708ad;
-  --text-tertiary: #06070899; /* sprint-4 a11y: 85 → 99, контраст ≥ 4.5 и на --bg-surface */
+  --text-tertiary: #06070899; /* контраст ≥ 4.5 и на --bg-surface */
   --text-mute: #06070866;
   --text-inverse: #fff;
-  --text-link: #0068d9; /* sprint-4 a11y: #007aff на белом — 4.0 */
+  --text-link: #0068d9; /* #007aff на белом — 4.0, мало для текста */
 
   --icon-primary: #060708d6;
   --icon-secondary: #060708a3;
@@ -155,7 +155,7 @@
   --text-tertiary: #ffffffa3;
   --text-mute: #fff6;
   --text-inverse: #060708;
-  --text-link: #3d95ff; /* sprint-4 a11y: #007aff на тёмном — 4.4 */
+  --text-link: #3d95ff; /* #007aff на тёмном — 4.4, мало для текста */
 
   --icon-primary: #fff;
   --icon-secondary: #ffffffad;
@@ -204,7 +204,7 @@
   }
 }
 
-/* ---- Sprint 1 additions: banners, status, breakpoints ---- */
+/* ---- Баннеры, статусы, брейкпоинты ---- */
 :root {
   --bp-mobile-max: 899px; /* < 900: одна колонка */
   --bp-desktop: 900px; /* >= 900: две колонки */
@@ -250,7 +250,7 @@
   --text-negative-strong: #ff6679;
 }
 
-/* ---- Sprint 2 additions: composer, bubble meta, list ---- */
+/* ---- Поле ввода, метаданные пузыря, список ---- */
 :root {
   --composer-max-lines: 6;
   --composer-textarea-min-h: 40px;
@@ -280,7 +280,7 @@
   --scroll-fab-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-/* ---- Sprint 2: avatar gradients (DESIGN §4.3), одинаковые в обеих темах ---- */
+/* ---- Аватары: градиенты, одинаковые в обеих темах ---- */
 :root {
   --avatar-sky: linear-gradient(135deg, #08d7f3, #5398ff);
   --avatar-violet: linear-gradient(135deg, #bf97ff, #526eff);
@@ -289,12 +289,12 @@
   --avatar-orange: linear-gradient(135deg, #ffc93d, #ff832a);
 }
 
-/* ---- Sprint 2: layout (DESIGN §3 — зона сообщений центрируется, max-width 791) ---- */
+/* ---- Раскладка: зона сообщений центрируется, max-width 791 ---- */
 :root {
   --chat-content-max-w: 791px;
 }
 
-/* ---- Sprint 3 additions: read status, new-messages FAB, unsupported bubble ---- */
+/* ---- Статус «прочитано», кнопка «Новые сообщения», неподдерживаемый пузырь ---- */
 :root {
   --fab-size: 40px;
   --fab-offset: 16px;
@@ -318,7 +318,7 @@
   --fab-badge-fg: #fff;
 }
 
-/* ---- Sprint 4 additions: focus, motion, skeleton, touch ---- */
+/* ---- Фокус, движение, скелетон, касания ---- */
 :root {
   --focus-ring:
     0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent); /* двойное кольцо — видно на любом фоне */

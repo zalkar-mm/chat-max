@@ -55,7 +55,7 @@ describe('ChatListItem', () => {
     expect(screen.queryByText('не отправлено')).not.toBeInTheDocument()
   })
 
-  it('доступное имя по DS: название, превью, время, статус', () => {
+  it('доступное имя: название, превью, время, статус', () => {
     renderItem({ status: 'failed' })
     expect(screen.getByRole('button')).toHaveAccessibleName(
       '+7 999 123-45-67, Вы: Привет, 14:05, не отправлено',

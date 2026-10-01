@@ -34,7 +34,7 @@ export function ChatsPage() {
   )
   const mainCn = cn('min-h-0 min-w-0 md:block', isChatOpen ? 'block' : 'hidden')
 
-  // Пропуск навигации (DS §2): к ленте открытого чата, иначе — к списку.
+  // Пропуск навигации: к ленте открытого чата, иначе — к списку.
   const skipTarget = isChatOpen ? 'messages' : 'chat-list'
 
   return (

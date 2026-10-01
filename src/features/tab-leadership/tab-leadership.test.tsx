@@ -52,8 +52,8 @@ const pause = (ms: number) =>
     await new Promise((resolve) => setTimeout(resolve, ms))
   })
 
-describe('Спринт 4, задача 3 — работа в двух вкладках', () => {
-  it('1, 4: вторая вкладка забрала сессию → заглушка, запросов к GREEN-API нет', async () => {
+describe('Работа в двух вкладках', () => {
+  it('вторая вкладка забрала сессию → заглушка, запросов к GREEN-API нет', async () => {
     await openedInOtherTab()
     expect(screen.queryByRole('heading', { name: 'Чаты' })).not.toBeInTheDocument()
     await waitFor(() => {
@@ -69,7 +69,7 @@ describe('Спринт 4, задача 3 — работа в двух вклад
     expect(pendingNotifications(ID)).toBe(1)
   })
 
-  it('2: «Использовать здесь» → вкладка снова активна, вторая уходит на заглушку, получение идёт', async () => {
+  it('«Использовать здесь» → вкладка снова активна, вторая уходит на заглушку, получение идёт', async () => {
     const { user, other } = await openedInOtherTab()
     act(() => {
       pushNotification(
@@ -93,7 +93,7 @@ describe('Спринт 4, задача 3 — работа в двух вклад
     })
   })
 
-  it('2: вернувшись, вкладка перечитывает историю, которую записала другая', async () => {
+  it('вернувшись, вкладка перечитывает историю, которую записала другая', async () => {
     const { user } = await openedInOtherTab()
     sessionStorage.setItem(
       `max-chat:history:${ID}`,
@@ -120,7 +120,7 @@ describe('Спринт 4, задача 3 — работа в двух вклад
     expect(within(list).getByText('Анна')).toBeInTheDocument()
   })
 
-  it('3: выход в другой вкладке → экран входа', async () => {
+  it('выход в другой вкладке → экран входа', async () => {
     const { other } = await openedInOtherTab()
     act(() => {
       other.channel.postMessage({ type: 'sessionEnded', idInstance: ID, reason: 'signOut' })
@@ -128,7 +128,7 @@ describe('Спринт 4, задача 3 — работа в двух вклад
     expect(await screen.findByRole('heading', { name: 'Вход' })).toBeInTheDocument()
   })
 
-  it('3: «Выйти» на заглушке → экран входа здесь, выход в другой вкладке, история удалена', async () => {
+  it('«Выйти» на заглушке → экран входа здесь, выход в другой вкладке, история удалена', async () => {
     const { user, other } = await openedInOtherTab()
     sessionStorage.setItem(`max-chat:history:${ID}`, '{}')
     await user.click(screen.getByRole('button', { name: 'Выйти' }))

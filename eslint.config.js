@@ -177,7 +177,6 @@ export default tseslint.config(
       'dev-dist',
       'public',
       'coverage',
-      'design',
       'playwright-report',
       'test-results',
     ],

@@ -56,7 +56,7 @@ const ACTION_BASE =
 function BannerActions({ children }: BannerActionsProps) {
   if (!children) return null
 
-  // Отступ слева = иконка 20 + gap 12: на mobile кнопки выровнены по тексту (DS-3 §6).
+  // Отступ слева = иконка 20 + gap 12: на mobile кнопки выровнены по тексту.
   return (
     <div className="order-last -my-1.5 flex basis-full flex-wrap items-center gap-x-2 pl-6 md:order-none md:my-0 md:basis-auto md:pl-0">
       {children}

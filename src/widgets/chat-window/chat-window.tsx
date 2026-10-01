@@ -19,7 +19,7 @@ export function ChatWindow({ chatId }: ChatWindowProps) {
   const chat = useChat(chatId)
   useViewedChat(chatId)
 
-  // Чаты живут до перезагрузки (история — спринт 3): неизвестный чат в URL ведёт к списку.
+  // Чаты живут до перезагрузки: неизвестный чат в URL ведёт к списку.
   if (!chat) return <Navigate to={ROUTES.CHATS} replace />
 
   const handleBack = () => {

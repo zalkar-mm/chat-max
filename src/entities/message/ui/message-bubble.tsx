@@ -12,7 +12,7 @@ type MessageBubbleProps = {
   isLastInGroup: boolean
   /** Как скринридеру назвать автора входящего: имя собеседника или номер. */
   senderLabel: string
-  /** Сообщение пришло, пока лента открыта, — появляется с анимацией (DS §5). */
+  /** Сообщение пришло, пока лента открыта, — появляется с анимацией. */
   isNew?: boolean
   footer?: ReactNode
   aside?: ReactNode
@@ -62,7 +62,7 @@ const STATUS_ICON: Record<MetaKind, ReactNode> = {
   sending: <Clock className={cn(STATUS_ICON_CN, 'opacity-70')} aria-hidden />,
   sent: <Check className={STATUS_ICON_CN} aria-hidden />,
   delivered: <CheckCheck className={STATUS_ICON_CN} aria-hidden />,
-  // Прочитано — белый 100% и толще линия: второй цвет на синем градиенте не читается (DS спринта 3).
+  // Прочитано — белый 100% и толще линия: второй цвет на синем градиенте не читается.
   read: <CheckCheck className="size-4 shrink-0 text-white" strokeWidth={2.5} aria-hidden />,
   // Ошибку показывают aside и footer: красная иконка на синем градиенте плохо читается.
   failed: null,
@@ -76,7 +76,7 @@ const UNSUPPORTED_TEXT = 'Сообщение этого типа не подде
 const toPlainText = (message: Message) =>
   message.content === 'unsupported' ? UNSUPPORTED_TEXT : message.text
 
-/** DS §3: «Вы, 14:05, доставлено: текст» / «Анна, 14:06: текст». */
+/** Доступное имя: «Вы, 14:05, доставлено: текст» / «Анна, 14:06: текст». */
 function toAriaLabel(
   message: Message,
   senderLabel: string,

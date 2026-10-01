@@ -29,7 +29,7 @@ type FeedRowProps = {
   isNew: boolean
 }
 
-// Отступы по спеке: 2px внутри группы одного автора, 8px между авторами; вокруг разделителя дня — свои 16px.
+// Отступы по дизайну: 2px внутри группы одного автора, 8px между авторами; вокруг разделителя дня — свои 16px.
 function FeedRowView({ row, senderLabel, isNew }: FeedRowProps) {
   if (row.kind === 'day') return <DayDivider label={row.label} />
 
