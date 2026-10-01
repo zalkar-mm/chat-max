@@ -1,3 +1,5 @@
+import { resetNotificationQueues } from './notification-queue'
+
 type StateScenario =
   | { kind: 'state'; delayMs: number; next: () => string }
   | { kind: 'status'; delayMs: number; status: number }
@@ -48,6 +50,7 @@ export function getStateScenario(idInstance: string): StateScenario {
 
 export function resetScenarios() {
   cache.clear()
+  resetNotificationQueues()
 }
 
 type HttpScenario<T> = ({ kind: 'ok' } & T) | { kind: 'status'; status: number }
@@ -84,11 +87,29 @@ const SEND_MESSAGE_STATUS: Readonly<Record<string, number>> = {
 
 let messageCounter = 0
 
-export function getSendMessageScenario(body: unknown): HttpScenario<{ idMessage: string }> {
+export function getSendMessageScenario(
+  body: unknown,
+): HttpScenario<{ idMessage: string; chatId: string; text: string }> {
   const text = isRecord(body) ? String(body.message) : ''
+  const chatId = isRecord(body) ? String(body.chatId) : ''
   const tag = Object.keys(SEND_MESSAGE_STATUS).find((key) => text.includes(key))
   const status = tag === undefined ? undefined : SEND_MESSAGE_STATUS[tag]
   if (status !== undefined) return { kind: 'status', status }
   messageCounter += 1
-  return { kind: 'ok', idMessage: `mock-${Date.now()}-${messageCounter}` }
+  return { kind: 'ok', idMessage: `mock-${Date.now()}-${messageCounter}`, chatId, text }
 }
+
+// Окончание idInstance выбирает настройки и поведение очереди уведомлений (src/mocks/README.md).
+export function getSettingsScenario(idInstance: string) {
+  const suffix = idInstance.slice(-2)
+  return {
+    webhookUrl: suffix === '60' ? 'https://example.com/webhook' : '',
+    incomingWebhook: suffix === '61' ? 'no' : 'yes',
+    outgoingWebhook: 'yes',
+    outgoingMessageWebhook: 'yes',
+    outgoingAPIMessageWebhook: 'yes',
+    stateWebhook: 'yes',
+  }
+}
+
+export const isReceiveBroken = (idInstance: string) => idInstance.endsWith('70')
