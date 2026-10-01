@@ -26,8 +26,14 @@ const pendingEchoes = new Map<string, ReturnType<typeof setTimeout>>()
 const isChatOnScreen = (chatId: string) =>
   getViewedChatId() === chatId && document.visibilityState === 'visible'
 
+/**
+ * Активность чата — момент, когда событие дошло до нас: время отправки из MAX в секундах и может быть
+ * «раньше» чата, созданного здесь в ту же секунду. Место сообщения в ленте задаёт время отправки.
+ */
+const activityAt = (event: { sentAt: number }) => Math.max(event.sentAt, Date.now())
+
 function applyIncoming(event: IncomingMessageEvent) {
-  ensureChat({ chatId: event.chatId, phone: event.phone, name: event.name, now: event.sentAt })
+  ensureChat({ chatId: event.chatId, phone: event.phone, name: event.name, now: activityAt(event) })
   const isAdded = addIncomingMessage({
     chatId: event.chatId,
     idMessage: event.idMessage,
@@ -36,12 +42,12 @@ function applyIncoming(event: IncomingMessageEvent) {
     createdAt: event.sentAt,
   })
   if (!isAdded) return
-  touchChat(event.chatId, event.sentAt)
+  touchChat(event.chatId, activityAt(event))
   if (!isChatOnScreen(event.chatId)) incrementUnread(event.chatId)
 }
 
 function addOutgoing(event: OutgoingMessageEvent) {
-  ensureChat({ chatId: event.chatId, now: event.sentAt })
+  ensureChat({ chatId: event.chatId, now: activityAt(event) })
   const isAdded = addSyncedOutgoingMessage({
     chatId: event.chatId,
     idMessage: event.idMessage,
@@ -49,7 +55,7 @@ function addOutgoing(event: OutgoingMessageEvent) {
     content: event.content,
     createdAt: event.sentAt,
   })
-  if (isAdded) touchChat(event.chatId, event.sentAt)
+  if (isAdded) touchChat(event.chatId, activityAt(event))
 }
 
 function applyOutgoing(event: OutgoingMessageEvent) {
