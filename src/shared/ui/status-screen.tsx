@@ -15,6 +15,8 @@ type StatusScreenProps = {
   footnote?: ReactNode
   /** Перевести фокус на заголовок при показе: смена экрана без этого не слышна скринридеру. */
   focusTitle?: boolean
+  /** Объявить заголовок сразу при появлении (`aria-live="assertive"`): экран сменился без действия пользователя. */
+  announceTitle?: boolean
 }
 
 const VISUAL_TONE_CLASSES: Record<StatusScreenTone, string> = {
@@ -30,6 +32,7 @@ export function StatusScreen({
   children,
   footnote,
   focusTitle = false,
+  announceTitle = false,
 }: StatusScreenProps) {
   const titleRef = useRef<HTMLHeadingElement>(null)
 
@@ -42,11 +45,17 @@ export function StatusScreen({
     VISUAL_TONE_CLASSES[tone],
   )
   const hasFootnote = footnote !== undefined && footnote !== null
+  const titleLive = announceTitle ? 'assertive' : undefined
 
   return (
     <div className="mx-auto flex w-full max-w-(--auth-card-w) flex-col items-center text-center">
       <div className={visualCn}>{visual}</div>
-      <h1 ref={titleRef} tabIndex={-1} className="mt-6 typo-subheader text-primary outline-none">
+      <h1
+        ref={titleRef}
+        tabIndex={-1}
+        aria-live={titleLive}
+        className="mt-6 typo-subheader text-primary outline-none"
+      >
         {title}
       </h1>
       <p className="mt-2 typo-body text-secondary">{description}</p>
