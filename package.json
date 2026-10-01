@@ -13,10 +13,12 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run check:secrets && npm run test",
     "lint:fix": "eslint . --fix",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "prepare": "simple-git-hooks"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",
@@ -72,5 +74,16 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs}": [
+      "eslint --max-warnings 0 --no-warn-ignored --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,html,yml,yaml}": "prettier --write",
+    "*": "node scripts/check-secrets.mjs"
   }
 }

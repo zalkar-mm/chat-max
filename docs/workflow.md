@@ -58,9 +58,10 @@ build(infra): add tailwind and design tokens
 
 | Когда                           | Что                                                                                         |
 | ------------------------------- | ------------------------------------------------------------------------------------------- |
-| Перед каждым коммитом           | `npm run check` (typecheck + lint + format:check + test)                                    |
+| При коммите (pre-commit-хук)    | ESLint `--fix` + Prettier + `check:secrets` по застейдженным файлам (`lint-staged`)         |
+| Перед каждым коммитом           | `npm run check` (typecheck + lint + format:check + check:secrets + test)                    |
 | Перед push / сдачей             | `npm run build` + ручной сценарий ([testing §5](testing.md#5-ручная-проверка-перед-сдачей)) |
-| CI (`.github/workflows/ci.yml`) | `npm ci` → `check` → `build`                                                                |
+| CI (`.github/workflows/ci.yml`) | push и PR: secrets → lint → typecheck → format → тесты с покрытием → build → e2e            |
 
 Красный `check` — не коммитим. `--no-verify` — запрещён.
 
