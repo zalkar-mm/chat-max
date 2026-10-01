@@ -18,7 +18,7 @@
 | Запросы              | axios (один инстанс) + TanStack Query (мутации)                                    |
 | Клиентское состояние | Zustand (+ `persist` для кредов и темы)                                            |
 | Роутинг              | React Router v7 (data router)                                                      |
-| Формы                | react-hook-form + zod                                                              |
+| Формы                | react-hook-form + zod (`zod/mini` — вдвое меньше в бандле)                         |
 | Сбой рендера         | `errorElement` корневого роута React Router                                        |
 | Моки API             | MSW — тесты и dev-сценарии                                                         |
 

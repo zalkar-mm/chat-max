@@ -83,9 +83,32 @@ function FeedContent({ rows, senderLabel, initialIds }: FeedContentProps) {
       </p>
     )
   }
-  return rows.map((row) => (
-    <FeedRow key={row.key} row={row} senderLabel={senderLabel} isNew={!initialIds.has(row.key)} />
+  // День — отдельный блок: липкий разделитель держится только в пределах своего дня
+  // и уезжает, когда подходит следующий, а не ложится поверх него.
+  return splitByDay(rows).map((day) => (
+    <div key={day.key}>
+      {day.rows.map((row) => (
+        <FeedRow
+          key={row.key}
+          row={row}
+          senderLabel={senderLabel}
+          isNew={!initialIds.has(row.key)}
+        />
+      ))}
+    </div>
   ))
+}
+
+type DayRows = { key: string; rows: MessageRow[] }
+
+function splitByDay(rows: readonly MessageRow[]): DayRows[] {
+  const days: DayRows[] = []
+  for (const row of rows) {
+    const current = days.at(-1)
+    if (row.kind === 'day' || current === undefined) days.push({ key: row.key, rows: [row] })
+    else current.rows.push(row)
+  }
+  return days
 }
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -188,7 +211,7 @@ export function MessageFeed({ chatId, title }: MessageFeedProps) {
         ref={scrollRef}
         id="messages"
         tabIndex={-1}
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto focus-visible:shadow-none"
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto"
         onScroll={handleScroll}
       >
         <div

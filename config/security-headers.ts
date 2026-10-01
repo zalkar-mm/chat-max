@@ -6,7 +6,9 @@ const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   // Скрипты — только наши: тема выставляется файлом /theme-init.js, без inline-кода.
   "script-src 'self'",
-  "style-src 'self'",
+  // 'unsafe-inline' для стилей: блокировка прокрутки под модалкой (Radix) вставляет <style> с вычисленной
+  // шириной полосы прокрутки — хешем его не описать. Скрипты при этом остаются строго своими.
+  "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   // Запросы — только к GREEN-API (у инстансов MAX бывают оба домена: *.green-api.com и *.greenapi.com).
   "connect-src 'self' https://*.green-api.com https://*.greenapi.com",

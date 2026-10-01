@@ -14,7 +14,7 @@ export function SidebarHeader({ subtitle, actions }: SidebarHeaderProps) {
         <Server className="size-5" aria-hidden />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
-        <h1 className="typo-title text-primary">Чаты</h1>
+        <h2 className="typo-title text-primary">Чаты</h2>
         <p className="truncate typo-description text-tertiary">{subtitle}</p>
       </div>
       <div className="flex shrink-0 items-center">{actions}</div>

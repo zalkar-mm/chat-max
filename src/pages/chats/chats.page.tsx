@@ -40,14 +40,16 @@ export function ChatsPage() {
   return (
     <div className="flex h-dvh flex-col bg-surface pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]">
       <SkipLink targetId={skipTarget}>Перейти к сообщениям</SkipLink>
+      <h1 className="sr-only">MAX-чат</h1>
       <UnreadTitle />
       <StatusBanners />
-      <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[var(--sidebar-w-narrow)_minmax(0,1fr)] xl:grid-cols-[var(--sidebar-w)_minmax(0,1fr)]">
+      {/* main — вся рабочая область: на mobile видна одна из колонок, а landmark должен быть всегда. */}
+      <main className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[var(--sidebar-w-narrow)_minmax(0,1fr)] xl:grid-cols-[var(--sidebar-w)_minmax(0,1fr)]">
         <ChatSidebar selectedChatId={chatId} isHidden={isChatOpen} className={sidebarCn} />
-        <main className={mainCn}>
+        <div className={mainCn}>
           <ChatPanel chatId={chatId} />
-        </main>
-      </div>
+        </div>
+      </main>
       <NewChatDialog />
     </div>
   )

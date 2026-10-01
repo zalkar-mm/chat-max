@@ -63,7 +63,7 @@
 - Новый чат
 - Начать новый чат
 
-## `features/create-chat/new-chat-dialog.tsx`
+## `features/create-chat/new-chat-dialog-body.tsx`
 
 - Новый чат
 
@@ -195,6 +195,7 @@
 ## `pages/chats/chats.page.tsx`
 
 - Перейти к сообщениям
+- MAX-чат
 
 ## `pages/sign-in/sign-in.page.tsx`
 
