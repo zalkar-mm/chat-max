@@ -15,6 +15,9 @@ const openChat = async (phone = '79991234567') => {
   return { ...view, composer, sendButton }
 }
 
+// Подпись статуса для скринридера; «, отправлено» целиком — не путать с «, не отправлено».
+const SENT = ', отправлено'
+
 const feed = () => screen.getByRole('log', { name: 'Сообщения' })
 
 const sendRequests = () => {
@@ -42,9 +45,7 @@ describe('Спринт 2, задача 4 — лента', () => {
     const bubbleText = await within(feed()).findByText(/<b>привет<\/b>/)
     expect(bubbleText.textContent).toBe('<b>привет</b>\nвторая строка')
     expect(feed().querySelector('b')).toBeNull()
-    expect(
-      within(feed()).getByLabelText(/^\d{2}:\d{2}, (отправляется|отправлено)$/),
-    ).toBeInTheDocument()
+    expect(within(feed()).getByText(/^, (отправляется|отправлено)$/)).toBeInTheDocument()
   })
 
   it('7: после отправки лента прокручивается к новому сообщению', async () => {
@@ -119,7 +120,7 @@ describe('Спринт 2, задача 6 — отправка и статусы'
     await user.type(composer, '  Привет  {Enter}')
     expect(composer).toHaveValue('')
     expect(composer).toHaveFocus()
-    expect(await within(feed()).findByLabelText(/отправлено$/)).toBeInTheDocument()
+    expect(await within(feed()).findByText(SENT)).toBeInTheDocument()
     expect(bodies).toEqual([{ chatId: '191234567', message: 'Привет' }])
   })
 
@@ -143,7 +144,7 @@ describe('Спринт 2, задача 6 — отправка и статусы'
     const { user, composer } = await openChat()
     await user.type(composer, 'один{Enter}два{Enter}три{Enter}')
     await waitFor(() => {
-      expect(within(feed()).getAllByLabelText(/отправлено$/)).toHaveLength(3)
+      expect(within(feed()).getAllByText(SENT)).toHaveLength(3)
     })
     expect(order).toEqual(['один', 'два', 'три'])
     expect(maxInFlight).toBe(1)
@@ -159,7 +160,7 @@ describe('Спринт 2, задача 6 — отправка и статусы'
     onLine.mockReturnValue(true)
     server.resetHandlers()
     await user.click(within(feed()).getByRole('button', { name: 'Повторить' }))
-    expect(await within(feed()).findByLabelText(/отправлено$/)).toBeInTheDocument()
+    expect(await within(feed()).findByText(SENT)).toBeInTheDocument()
     expect(within(feed()).getAllByText('Привет')).toHaveLength(1)
   })
 
@@ -216,6 +217,26 @@ describe('Спринт 2, задача 3 — список чатов', () => {
     })
     expect(titles()[0]).toContain('Вы: Привет')
     expect(titles()[0]).toMatch(/\d{2}:\d{2}/)
+  })
+
+  it('5: список управляется с клавиатуры — Enter на элементе открывает чат', async () => {
+    const view = await renderSignedInApp()
+    await createChatViaForm(view.user, '79991111111')
+    await createChatViaForm(view.user, '79992222222')
+    const list = screen.getByRole('navigation', { name: 'Список чатов' })
+    within(list)
+      .getByRole('button', { name: /\+7 999 111-11-11/ })
+      .focus()
+    await view.user.keyboard('{Enter}')
+    expect(await screen.findByRole('heading', { name: '+7 999 111-11-11' })).toBeInTheDocument()
+  })
+
+  it('«Назад к списку» возвращает к списку (mobile master-detail)', async () => {
+    const view = await renderSignedInApp()
+    await createChatViaForm(view.user, '79991111111')
+    await view.user.click(screen.getByRole('button', { name: 'Назад к списку' }))
+    expect(view.router.state.location.pathname).toBe('/')
+    expect(screen.getByRole('navigation', { name: 'Список чатов' })).toBeInTheDocument()
   })
 
   it('4: активный чат подсвечен', async () => {

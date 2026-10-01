@@ -73,12 +73,6 @@ export function clearMessages() {
   useMessageStore.setState(INITIAL, true)
 }
 
-export const useMessage = (id: MessageId): Message | null =>
-  useMessageStore((state) => state.byId[id] ?? null)
-
-export const useChatMessageIds = (chatId: string): readonly MessageId[] =>
-  useMessageStore((state) => state.idsByChat[chatId] ?? EMPTY_IDS)
-
 export const useLastMessage = (chatId: string): Message | null =>
   useMessageStore((state) => {
     const lastId = state.idsByChat[chatId]?.at(-1)

@@ -8,12 +8,13 @@ import {
 } from 'react'
 
 import { setChatDraft, useChatDraft } from '@/entities/chat/model/chat.store'
+import { MAX_MESSAGE_LENGTH } from '@/entities/message/model/message-limits'
 import { isUsableInstanceState } from '@/entities/session/model/instance-state'
 import { useInstanceState } from '@/entities/session/model/session.store'
 
 import { DESKTOP_MEDIA_QUERY, useMediaQuery } from '@/shared/lib/use-media-query'
 
-import { MAX_MESSAGE_LENGTH, sendMessage } from './send-queue'
+import { sendMessage } from './send-queue'
 
 export const COUNTER_THRESHOLD = 3800
 
@@ -57,7 +58,9 @@ export function useComposer(chatId: string, textareaRef: RefObject<HTMLTextAreaE
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return
+    // keyCode 229 — Safari подтверждает IME-ввод Enter-ом с isComposing: false.
+    const isComposing = event.nativeEvent.isComposing || event.keyCode === 229
+    if (event.key !== 'Enter' || event.shiftKey || isComposing) return
     event.preventDefault()
     send()
   }

@@ -8,7 +8,7 @@ import {
   markMessageFailed,
   markMessageSending,
   markMessageSent,
-  useChatMessageIds,
+  useChatMessages,
   useLastMessage,
   useMessageStore,
 } from './message.store'
@@ -84,8 +84,8 @@ describe('message.store', () => {
     expect(useMessageStore.getState().idsByChat).toEqual({})
   })
 
-  it('useChatMessageIds для пустого чата возвращает стабильную ссылку', () => {
-    const { result, rerender } = renderHook(() => useChatMessageIds('empty@c.us'))
+  it('useChatMessages для пустого чата возвращает стабильную ссылку', () => {
+    const { result, rerender } = renderHook(() => useChatMessages('empty@c.us'))
     const first = result.current
     rerender()
     expect(result.current).toEqual([])
