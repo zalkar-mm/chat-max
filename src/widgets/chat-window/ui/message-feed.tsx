@@ -102,6 +102,19 @@ export function MessageFeed({ chatId }: MessageFeedProps) {
     if (feed) feed.scrollTop = feed.scrollHeight
   }, [chatId])
 
+  // Лента сжалась (баннер сверху, клавиатура, многострочное поле): кто был внизу — остаётся внизу.
+  useEffect(() => {
+    const feed = scrollRef.current
+    if (!feed || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => {
+      if (!isAwayRef.current) feed.scrollTop = feed.scrollHeight
+    })
+    observer.observe(feed)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
   // Своя отправка — плавно к новому сообщению.
   useEffect(() => {
     const feed = scrollRef.current
